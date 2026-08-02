@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+data/raw/
+data/interim/
+report/_freeze/
+report/.quarto/
+*.egg-info/
