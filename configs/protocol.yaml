@@ -1,0 +1,69 @@
+# Pre-registered protocol of block 2. Committed before any forecast was computed:
+# changing a value below after seeing results is a deviation, and is reported as one in
+# IMPLEMENTATION_NOTES.md.
+
+data:
+  url: https://data.open-power-system-data.org/time_series/2020-10-06/time_series_60min_singleindex.csv
+  sha256: 6a7f2bc571314cbf9c321cc03437691cd4be95c3a6f075e60ff99e8035c704c8
+  column: FR_load_actual_entsoe_transparency
+  unit: MW
+  # Values outside this range are set to missing. French national record: about 102 GW (Feb 2012).
+  physical_range: [20000, 110000]
+  # Gap filling for model inputs only. Imputed hours are never scored as targets.
+  fill_linear_max_hours: 3   # longer gaps: value one week earlier
+  local_tz: Europe/Paris
+
+origins:
+  hour_utc: 0              # forecast the next 24 UTC hours from 00:00 UTC
+  start: "2018-11-01"      # first 61 origins only feed the conformal calibration of block 2
+  end: "2020-06-30"
+  test: ["2019-01-01", "2019-12-31"]      # main verdict: 365 origins
+  stress: ["2020-03-17", "2020-05-10"]    # first French lockdown, reported apart
+  horizon: 24
+
+models:
+  seasonal_naive_24: {season: 24}
+  seasonal_naive_168: {season: 168}
+  auto_ets: {season: 24, train_hours: 672}                 # 4 weeks, refit at every origin
+  mstl: {seasons: [24, 168], trend: "AutoETS(ZZN)", train_hours: 1344}   # 8 weeks
+  chronos_bolt_small: {checkpoint: amazon/chronos-bolt-small, context_hours: 2048}
+  chronos_bolt_base: {checkpoint: amazon/chronos-bolt-base, context_hours: 2048}
+  chronos_2: {checkpoint: amazon/chronos-2, context_hours: 2048}   # same context as Bolt for parity
+
+# Common quantile grid scored for every model. Statistical models: symmetric levels
+# 20/40/60/80/90 -> quantiles 0.05..0.95, median = point forecast.
+quantiles: [0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95]
+
+metrics:
+  mase_seasonality: 24     # as in the brief; scale = in-sample seasonal-naive MAE of the history up to the origin
+  interval_levels: [80, 90]
+  point: [mase, smape, wape]
+  probabilistic: [coverage, width, winkler, scaled_quantile_loss]
+
+verdict:
+  reference: auto_ets
+  # "C beats the reference on a regime" iff the 95% block-bootstrap CI of the ratio of
+  # mean MASE (C / reference) over the regime's origins lies entirely below 1.
+  ratio_ci: 0.95
+  # "deployable as-is" iff the empirical coverage of the nominal 90% interval is in this band.
+  coverage90_band: [0.85, 0.95]
+  bootstrap: {block_days: 7, replicates: 2000, seed: 25}
+
+minimal_run:
+  # The brief's ">= 6 origins": how often does a random 6-origin subset of the test year
+  # give the same ranking as the 365 origins?
+  n_origins: 6
+  draws: 2000
+  seed: 25
+
+regimes:
+  season: {DJF: [12, 1, 2], MAM: [3, 4, 5], JJA: [6, 7, 8], SON: [9, 10, 11]}
+  day_type: [monday, tue_fri, saturday, sunday, holiday, bridge]   # local date of the target day
+  horizon_buckets: [[1, 6], [7, 12], [13, 18], [19, 24]]
+
+conformal:
+  # Post-hoc repair of an interval: widen the median by the empirical quantile of absolute errors
+  # at the same horizon step over the previous origins whose targets are observed.
+  calibration_origins: 56
+
+seed: 25
