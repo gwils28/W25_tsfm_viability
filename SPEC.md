@@ -25,8 +25,9 @@ before any forecast was computed.
    (the trap) and its native 80% coverage (the fair reading). Chronos-2 is trained on 0.01 to 0.99: no trap.
 2. **The French series has a corrupted value**: 158,000 MW on 2020-07-07 17:00 UTC, while the national record
    is about 102 GW. Plus 9 gaps of 1 to 13 hours. A physical range check is needed before any metric.
-3. **SeasonalNaive with season 24 forecasts Monday with Sunday.** On load, the weekly naive (season 168) is the
-   strong naive. We add it, otherwise the TSFM is compared with a strawman.
+3. **SeasonalNaive with season 24 forecasts Monday with Sunday.** The weekly naive (season 168) is added as a
+   second naive. (Measured afterwards, see `IMPLEMENTATION_NOTES.md`: neither naive dominates; the daily one
+   wins Tuesday to Friday and Sunday.)
 4. **`utilsforecast.losses.smape` is half the textbook sMAPE**: |e| / (|y| + |f|), bounded by 1, not
    2|e| / (|y| + |f|) bounded by 2. Our tables say which one they show.
 5. **Coverage alone rewards wide intervals.** It is reported with the mean interval width and the interval
