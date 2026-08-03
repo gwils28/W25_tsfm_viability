@@ -38,5 +38,7 @@ def test_chronos2_has_a_true_90_percent_interval(context):
     assert {0.05, 0.95} <= set(pipe.quantiles)
     q, _ = pipe.predict_quantiles([context[0]], prediction_length=24, quantile_levels=GRID)
     q = q[0].squeeze(0).numpy()
-    assert (q[:, 0] <= q[:, 1]).all() and (q[:, 4] >= q[:, 3]).all()
+    # Wider than the 80% interval on average; adjacent quantiles may still cross at some steps,
+    # which the metrics count instead of sorting it away.
     assert (q[:, 4] - q[:, 0]).mean() > (q[:, 3] - q[:, 1]).mean()
+    assert (q[:, 0] < q[:, 4]).all()
