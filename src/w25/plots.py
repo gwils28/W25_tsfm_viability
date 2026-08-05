@@ -33,6 +33,7 @@ MODEL_COLORS = {
     # A repaired variant keeps its model's colour; figures tell them apart by marker or line style.
     "chronos_bolt_base_conformal": SLOTS[1],
     "auto_ets_conformal": SLOTS[0],
+    "auto_ets_seasonal": SLOTS[7],
 }
 MODEL_LABELS = {
     "seasonal_naive_24": "SeasonalNaive(24)",
@@ -44,6 +45,7 @@ MODEL_LABELS = {
     "chronos_2": "Chronos-2",
     "chronos_bolt_base_conformal": "Bolt base + conformal",
     "auto_ets_conformal": "AutoETS + conformal",
+    "auto_ets_seasonal": "ETS seasonal (ZZA)",
 }
 
 

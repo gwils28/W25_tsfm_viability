@@ -165,8 +165,8 @@ def statistical_model(name: str, cfg: dict):
 
     if name.startswith("seasonal_naive"):
         return SeasonalNaive(season_length=cfg["season"])
-    if name == "auto_ets":
-        return AutoETS(season_length=cfg["season"])
+    if name.startswith("auto_ets"):
+        return AutoETS(season_length=cfg["season"], model=cfg.get("spec", "ZZZ"))
     if name == "mstl":
         return MSTL(season_length=cfg["seasons"], trend_forecaster=AutoETS(model="ZZN"))
     raise KeyError(name)

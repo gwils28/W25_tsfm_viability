@@ -26,6 +26,10 @@ models:
   seasonal_naive_168: {season: 168}
   auto_ets: {season: 24, train_hours: 672}                 # 4 weeks, refit at every origin
   mstl: {seasons: [24, 168], trend: "AutoETS(ZZN)", train_hours: 1344}   # 8 weeks
+  # DEVIATION (added 2026-08-05, after the first scores): AutoETS selects ETS(A,N,N) by AICc at
+  # 572 of 608 origins and forecasts a flat line. Same model with additive seasonality forced.
+  # The pre-registered verdict against auto_ets is still reported as written.
+  auto_ets_seasonal: {season: 24, train_hours: 672, spec: ZZA}
   chronos_bolt_small: {checkpoint: amazon/chronos-bolt-small, context_hours: 2048}
   chronos_bolt_base: {checkpoint: amazon/chronos-bolt-base, context_hours: 2048}
   chronos_2: {checkpoint: amazon/chronos-2, context_hours: 2048}   # same context as Bolt for parity
@@ -42,6 +46,7 @@ metrics:
 
 verdict:
   reference: auto_ets
+  reference_deviation: auto_ets_seasonal   # DEVIATION, see models
   # "C beats the reference on a regime" iff the 95% block-bootstrap CI of the ratio of
   # mean MASE (C / reference) over the regime's origins lies entirely below 1.
   ratio_ci: 0.95
