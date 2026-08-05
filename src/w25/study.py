@@ -18,6 +18,7 @@ ORDER = [
     "seasonal_naive_168",
     "auto_ets",
     "auto_ets_conformal",
+    "auto_ets_seasonal",
     "mstl",
     "chronos_bolt_small",
     "chronos_bolt_base",
@@ -60,15 +61,17 @@ def table(po: pd.DataFrame, which: str = "test") -> pd.DataFrame:
     return summary(sub, [m for m in ORDER if m in set(sub.model)])
 
 
-def verdicts(po: pd.DataFrame, proto: dict, by: str | None = None, which: str = "test") -> pd.DataFrame:
+def verdicts(
+    po: pd.DataFrame, proto: dict, by: str | None = None, which: str = "test", ref: str | None = None
+) -> pd.DataFrame:
     """Pre-registered verdict of every challenger against the reference, overall or per regime."""
     v = proto["verdict"]
-    ref = v["reference"]
+    ref = ref or v["reference"]
     sub = po[po.period == which]
     groups = [("all", sub)] if by is None else list(sub.groupby(by))
     rows = []
     for g, d in groups:
-        for ch in [m for m in ORDER if m in set(d.model) and m != ref]:
+        for ch in [m for m in ORDER if m in set(d.model) and not m.startswith(ref)]:
             r, lo, hi = compare(d, ch, ref, "mase", v["bootstrap"], v["ratio_ci"])
             cov = d[d.model == ch].sort_values("cutoff").cov90.to_numpy()
             c, clo, chi = mean_ci(cov, v["bootstrap"])

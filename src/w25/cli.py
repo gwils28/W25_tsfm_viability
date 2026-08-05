@@ -47,8 +47,13 @@ def backtest(stress: bool = typer.Option(False, help="also print the lockdown wi
     po, _ = score(proto)
     print("Test year 2019, mean over origins (smape = utilsforecast's |e|/(|y|+|f|), half the textbook one)")
     print(fmt(table(po)))
-    print("\nVerdict against AutoETS (MASE ratio, 95% block-bootstrap CI; coverage of the nominal 90%)")
+    print(
+        "\nPre-registered verdict against AutoETS (MASE ratio, 95% block-bootstrap CI; coverage of the 90%)"
+    )
     print(fmt(verdicts(po, proto).set_index("model").drop(columns="regime")))
+    ref = proto["verdict"]["reference_deviation"]
+    print(f"\nDEVIATION: same verdict against {ref} (AutoETS forecasts a flat line at most origins)")
+    print(fmt(verdicts(po, proto, ref=ref).set_index("model").drop(columns="regime")))
     if stress:
         print("\nLockdown window 2020-03-17 to 2020-05-10")
         print(fmt(table(po, "stress")))

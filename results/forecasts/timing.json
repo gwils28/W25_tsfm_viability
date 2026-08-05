@@ -1,0 +1,34 @@
+{
+  "seasonal_naive_24": {
+    "seconds": 0.74,
+    "origins": 608
+  },
+  "seasonal_naive_168": {
+    "seconds": 0.18,
+    "origins": 608
+  },
+  "chronos_bolt_small": {
+    "seconds": 1.37,
+    "origins": 608
+  },
+  "chronos_bolt_base": {
+    "seconds": 2.29,
+    "origins": 608
+  },
+  "chronos_2": {
+    "seconds": 3.05,
+    "origins": 608
+  },
+  "auto_ets": {
+    "seconds": 152.62,
+    "origins": 608
+  },
+  "mstl": {
+    "seconds": 113.96,
+    "origins": 608
+  },
+  "auto_ets_seasonal": {
+    "seconds": 94.0,
+    "origins": 608
+  }
+}
