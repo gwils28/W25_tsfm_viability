@@ -68,5 +68,18 @@ def figures_results() -> None:
         print(f"6 origins vs {ref}: {s['agree']:.1%} of draws agree with the 365-origin ranking", s)
 
 
+@app.command()
+def ablation(rerun: bool = typer.Option(False, help="recompute instead of reading the CSV")) -> None:
+    """EXPLORATORY: Chronos context length on the test year (results/ablation_context.csv)."""
+    import pandas as pd
+
+    from w25.ablation import figure, run
+    from w25.config import RESULTS
+
+    proto = load_protocol()
+    ab = run(proto) if rerun else pd.read_csv(RESULTS / "ablation_context.csv")
+    print(figure(ab, pd.read_parquet(RESULTS / "per_origin.parquet"), BLOCK2 / "figures"))
+
+
 if __name__ == "__main__":
     app()
