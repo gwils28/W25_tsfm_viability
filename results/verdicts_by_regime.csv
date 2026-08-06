@@ -1,0 +1,61 @@
+regime,model,origins,mase_ratio,ratio_lo,ratio_hi,cov90,cov90_lo,cov90_hi,verdict,group,ref
+all,chronos_bolt_base,365,0.4019,0.3548,0.4462,0.8583,0.8334,0.8842,WINS,all,auto_ets_seasonal
+all,chronos_2,365,0.3614,0.3162,0.4084,0.8617,0.8336,0.8881,WINS,all,auto_ets_seasonal
+DJF,chronos_bolt_base,90,0.4359,0.3689,0.4901,0.8630,0.8278,0.9070,WINS,season,auto_ets_seasonal
+DJF,chronos_2,90,0.4052,0.3348,0.4842,0.9069,0.8611,0.9491,WINS,season,auto_ets_seasonal
+JJA,chronos_bolt_base,92,0.3217,0.2745,0.3910,0.8782,0.8306,0.9185,WINS,season,auto_ets_seasonal
+JJA,chronos_2,92,0.2743,0.2269,0.3441,0.8328,0.7837,0.8741,WINS ON POINTS ONLY,season,auto_ets_seasonal
+MAM,chronos_bolt_base,92,0.4741,0.3766,0.5677,0.8188,0.7622,0.8750,WINS ON POINTS ONLY,season,auto_ets_seasonal
+MAM,chronos_2,92,0.4253,0.3321,0.4997,0.8406,0.7971,0.9044,WINS ON POINTS ONLY,season,auto_ets_seasonal
+SON,chronos_bolt_base,91,0.3555,0.2537,0.4586,0.8736,0.8095,0.9226,WINS,season,auto_ets_seasonal
+SON,chronos_2,91,0.3190,0.2171,0.4317,0.8677,0.8049,0.9153,WINS,season,auto_ets_seasonal
+bridge,chronos_bolt_base,2,0.7781,0.7781,0.7781,0.8958,0.8958,0.8958,WINS,day_type,auto_ets_seasonal
+bridge,chronos_2,2,0.8958,0.8958,0.8958,0.7083,0.7083,0.7083,WINS ON POINTS ONLY,day_type,auto_ets_seasonal
+holiday,chronos_bolt_base,11,1.1233,0.9087,1.1264,0.3674,0.3409,0.4432,NO DIFFERENCE,day_type,auto_ets_seasonal
+holiday,chronos_2,11,1.0877,0.8858,1.1027,0.3523,0.2803,0.4129,NO DIFFERENCE,day_type,auto_ets_seasonal
+monday,chronos_bolt_base,49,0.2089,0.1787,0.2319,0.8495,0.7866,0.8963,WINS ON POINTS ONLY,day_type,auto_ets_seasonal
+monday,chronos_2,49,0.2036,0.1655,0.2295,0.8197,0.7134,0.8937,WINS ON POINTS ONLY,day_type,auto_ets_seasonal
+saturday,chronos_bolt_base,52,0.2401,0.1782,0.2802,0.8758,0.8413,0.9159,WINS,day_type,auto_ets_seasonal
+saturday,chronos_2,52,0.1995,0.1538,0.2269,0.9046,0.8630,0.9343,WINS,day_type,auto_ets_seasonal
+sunday,chronos_bolt_base,51,0.3510,0.2756,0.4111,0.8946,0.8464,0.9379,WINS,day_type,auto_ets_seasonal
+sunday,chronos_2,51,0.2627,0.1973,0.3152,0.9011,0.8644,0.9240,WINS,day_type,auto_ets_seasonal
+tue_fri,chronos_bolt_base,200,0.6039,0.5486,0.6727,0.8733,0.8442,0.9015,WINS,day_type,auto_ets_seasonal
+tue_fri,chronos_2,200,0.5540,0.4919,0.6300,0.8804,0.8494,0.9083,WINS,day_type,auto_ets_seasonal
+h1-6,chronos_bolt_base,365,0.3241,0.2814,0.3661,0.9027,0.8762,0.9270,WINS,horizon,auto_ets_seasonal
+h1-6,chronos_2,365,0.2615,0.2280,0.2969,0.8991,0.8712,0.9256,WINS,horizon,auto_ets_seasonal
+h7-12,chronos_bolt_base,365,0.3277,0.2782,0.3715,0.8767,0.8447,0.9100,WINS,horizon,auto_ets_seasonal
+h7-12,chronos_2,365,0.2898,0.2424,0.3379,0.8726,0.8402,0.9028,WINS,horizon,auto_ets_seasonal
+h13-18,chronos_bolt_base,365,0.4495,0.3946,0.5026,0.7927,0.7484,0.8301,WINS ON POINTS ONLY,horizon,auto_ets_seasonal
+h13-18,chronos_2,365,0.4162,0.3633,0.4747,0.8068,0.7621,0.8420,WINS ON POINTS ONLY,horizon,auto_ets_seasonal
+h19-24,chronos_bolt_base,365,0.5214,0.4641,0.5735,0.8612,0.8320,0.8968,WINS,horizon,auto_ets_seasonal
+h19-24,chronos_2,365,0.4868,0.4292,0.5460,0.8685,0.8342,0.9005,WINS,horizon,auto_ets_seasonal
+all,chronos_bolt_base,365,0.8469,0.7967,0.9145,0.8583,0.8334,0.8842,WINS,all,mstl
+all,chronos_2,365,0.7615,0.7302,0.8165,0.8617,0.8336,0.8881,WINS,all,mstl
+DJF,chronos_bolt_base,90,0.7595,0.6895,0.8716,0.8630,0.8278,0.9070,WINS,season,mstl
+DJF,chronos_2,90,0.7059,0.6654,0.7981,0.9069,0.8611,0.9491,WINS,season,mstl
+JJA,chronos_bolt_base,92,0.7608,0.6952,0.8526,0.8782,0.8306,0.9185,WINS,season,mstl
+JJA,chronos_2,92,0.6489,0.5878,0.7325,0.8328,0.7837,0.8741,WINS ON POINTS ONLY,season,mstl
+MAM,chronos_bolt_base,92,0.9302,0.8366,1.0899,0.8188,0.7622,0.8750,NO DIFFERENCE,season,mstl
+MAM,chronos_2,92,0.8346,0.7499,0.9475,0.8406,0.7971,0.9044,WINS ON POINTS ONLY,season,mstl
+SON,chronos_bolt_base,91,0.9723,0.8827,1.0820,0.8736,0.8095,0.9226,NO DIFFERENCE,season,mstl
+SON,chronos_2,91,0.8726,0.8055,0.9424,0.8677,0.8049,0.9153,WINS,season,mstl
+bridge,chronos_bolt_base,2,1.2946,1.2946,1.2946,0.8958,0.8958,0.8958,LOSES,day_type,mstl
+bridge,chronos_2,2,1.4905,1.4905,1.4905,0.7083,0.7083,0.7083,LOSES,day_type,mstl
+holiday,chronos_bolt_base,11,0.8134,0.7999,0.9430,0.3674,0.3409,0.4432,WINS ON POINTS ONLY,day_type,mstl
+holiday,chronos_2,11,0.7876,0.7665,0.8838,0.3523,0.2803,0.4129,WINS ON POINTS ONLY,day_type,mstl
+monday,chronos_bolt_base,49,0.8660,0.7279,1.0397,0.8495,0.7866,0.8963,NO DIFFERENCE,day_type,mstl
+monday,chronos_2,49,0.8441,0.6826,1.0313,0.8197,0.7134,0.8937,NO DIFFERENCE,day_type,mstl
+saturday,chronos_bolt_base,52,0.8889,0.7646,1.1370,0.8758,0.8413,0.9159,NO DIFFERENCE,day_type,mstl
+saturday,chronos_2,52,0.7384,0.6635,0.9036,0.9046,0.8630,0.9343,WINS,day_type,mstl
+sunday,chronos_bolt_base,51,0.9287,0.8030,1.3292,0.8946,0.8464,0.9379,NO DIFFERENCE,day_type,mstl
+sunday,chronos_2,51,0.6950,0.5857,1.0362,0.9011,0.8644,0.9240,NO DIFFERENCE,day_type,mstl
+tue_fri,chronos_bolt_base,200,0.8164,0.7550,0.8931,0.8733,0.8442,0.9015,WINS,day_type,mstl
+tue_fri,chronos_2,200,0.7489,0.6925,0.8152,0.8804,0.8494,0.9083,WINS,day_type,mstl
+h1-6,chronos_bolt_base,365,0.9205,0.8457,1.0264,0.9027,0.8762,0.9270,NO DIFFERENCE,horizon,mstl
+h1-6,chronos_2,365,0.7428,0.6808,0.8260,0.8991,0.8712,0.9256,WINS,horizon,mstl
+h7-12,chronos_bolt_base,365,0.7697,0.7102,0.8421,0.8767,0.8447,0.9100,WINS,horizon,mstl
+h7-12,chronos_2,365,0.6807,0.6360,0.7428,0.8726,0.8402,0.9028,WINS,horizon,mstl
+h13-18,chronos_bolt_base,365,0.8515,0.7967,0.9245,0.7927,0.7484,0.8301,WINS ON POINTS ONLY,horizon,mstl
+h13-18,chronos_2,365,0.7886,0.7458,0.8552,0.8068,0.7621,0.8420,WINS ON POINTS ONLY,horizon,mstl
+h19-24,chronos_bolt_base,365,0.8877,0.8311,0.9690,0.8612,0.8320,0.8968,WINS,horizon,mstl
+h19-24,chronos_2,365,0.8288,0.7893,0.8977,0.8685,0.8342,0.9005,WINS,horizon,mstl

@@ -68,7 +68,7 @@ def verdicts(
     v = proto["verdict"]
     ref = ref or v["reference"]
     sub = po[po.period == which]
-    groups = [("all", sub)] if by is None else list(sub.groupby(by))
+    groups = [("all", sub)] if by is None else list(sub.groupby(by, observed=True))
     rows = []
     for g, d in groups:
         for ch in [m for m in ORDER if m in set(d.model) and not m.startswith(ref)]:
@@ -94,3 +94,14 @@ def verdicts(
 
 def fmt(t: pd.DataFrame) -> str:
     return t.to_string(float_format=lambda x: f"{x:.4f}")
+
+
+def by_horizon_bucket(ph: pd.DataFrame, buckets: list[list[int]]) -> pd.DataFrame:
+    """Per-origin MASE and coverage restricted to each horizon bucket, in the per_origin layout."""
+    lab = pd.cut(
+        ph.h, [b[0] - 1 for b in buckets] + [buckets[-1][1]], labels=[f"h{b[0]}-{b[1]}" for b in buckets]
+    )
+    g = ph.assign(bucket=lab).groupby(["model", "cutoff", "bucket"], observed=True)
+    out = g.agg(mase=("ase", "mean"), cov90=("in90", "mean"), cov80=("in80", "mean")).reset_index()
+    first = ph.drop_duplicates("cutoff")[["cutoff", "period", "season", "day_type"]]
+    return out.merge(first, on="cutoff")

@@ -59,5 +59,14 @@ def backtest(stress: bool = typer.Option(False, help="also print the lockdown wi
         print(fmt(table(po, "stress")))
 
 
+@app.command()
+def figures_results() -> None:
+    """Block 2 figures from the scored backtest, and verdicts by regime (results/verdicts_by_regime.csv)."""
+    from w25.figures_results import all_figures
+
+    for ref, s in all_figures(load_protocol(), BLOCK2 / "figures").items():
+        print(f"6 origins vs {ref}: {s['agree']:.1%} of draws agree with the 365-origin ranking", s)
+
+
 if __name__ == "__main__":
     app()
