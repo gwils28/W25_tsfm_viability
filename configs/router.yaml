@@ -1,0 +1,66 @@
+# Pre-registered protocol of block 3 (Complexity Router prototype). Committed before any
+# forecast of the panel was computed. Deviations go to IMPLEMENTATION_NOTES.md.
+
+panel:
+  # Every OPSD *_load_actual_entsoe_transparency column with < 0.5% missing hours over
+  # 2015-06-01 .. 2019-12-31: 50 series (countries and bidding zones).
+  max_missing: 0.005
+  window: ["2015-06-01", "2019-12-31"]
+  # Generic physical check (no per-country record at hand): outside [0.2, 3] x the series median.
+  range_vs_median: [0.2, 3.0]
+  fill_linear_max_hours: 3
+  # Countries group their zones (DE, DE_amprion, ...): cross-validation leaves one country out.
+  group: country_prefix
+
+origins:
+  start: "2019-01-02"
+  end: "2019-12-31"
+  step_days: 5          # 73 origins, every weekday represented
+  hour_utc: 0
+  horizon: 24
+
+# Cold start is simulated by truncating what each model may read at every origin.
+history_hours: [168, 336, 672, 2048]
+
+branches:
+  tsfm: {checkpoint: amazon/chronos-2, context: all_history}          # shared zero-shot model
+  specialist:
+    # Per-series model refitted at each origin on min(history, window) hours.
+    - {when_history_at_least: 336, model: mstl, seasons: [24, 168], window: 1344}
+    - {when_history_at_least: 48, model: ets_zza, season: 24, window: 672}
+
+label:
+  # Unit = (series, history). Winner = lower mean MASE (m = 24) over the 73 origins.
+  metric: mase
+
+features:
+  # Ex-ante only: computed on the last `history` hours before the first origin (2019-01-02).
+  - history_hours
+  - seasonal_strength_24       # STL-type: 1 - Var(remainder) / Var(seasonal + remainder)
+  - seasonal_strength_168      # 0 when history < 336 h (cannot be estimated)
+  - acf_24
+  - acf_168
+  - spectral_entropy           # normalised Shannon entropy of the periodogram (paper)
+  - cv                         # std / mean (paper)
+  - trend_r2                   # R^2 of a linear trend (paper)
+  - naive_noise                # MAE of SeasonalNaive(24) / mean, in the window
+
+policies:
+  - always_specialist
+  - always_tsfm
+  - paper_rule        # arXiv:2605.24381 thresholds copied as is: FM if >= 2 of
+                      # {entropy >= 0.24, cv >= 0.22, acf_24 >= 0.72 or < 0.50, trend_r2 < 0.05}
+  - learned_stump     # one feature, one threshold, chosen on the training countries only
+  - oracle            # per-unit winner, an upper bound, not a policy
+
+evaluation:
+  cv: leave_one_country_out
+  bootstrap: {replicates: 2000, seed: 25}   # over series, resampling countries
+  # Cost: measured wall time per forecast for each branch (GPU batched and CPU for the TSFM).
+
+drift:
+  # The router's own decision over time: recompute features on the trailing 28 days at every
+  # origin, apply the learned stump, count series whose route flips.
+  trailing_hours: 672
+
+seed: 25
