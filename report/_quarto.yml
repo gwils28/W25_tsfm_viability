@@ -1,0 +1,41 @@
+project:
+  type: website
+  output-dir: ../docs
+  resources:
+    - figures/
+
+execute:
+  freeze: auto
+  echo: false
+  warning: false
+
+website:
+  title: "W25 · TSFM viability"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Overview
+      - href: 01_watch.qmd
+        text: "1 · Watch"
+      - href: 02_backtest.qmd
+        text: "2 · Backtest"
+      - href: 03_router.qmd
+        text: "3 · Router"
+      - href: 04_mase.qmd
+        text: "4 · MASE"
+    right:
+      - icon: github
+        href: https://github.com/gwils28/W25_tsfm_viability
+
+format:
+  html:
+    theme:
+      light: cosmo
+      dark: darkly
+    toc: true
+    toc-depth: 2
+    number-sections: false
+    fig-align: center
+    code-fold: true
+    callout-appearance: simple
+    css: styles.css

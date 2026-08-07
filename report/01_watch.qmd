@@ -1,0 +1,33 @@
+---
+title: "1 · Tech watch, checked at the source"
+subtitle: "What the plan's three resources actually say"
+---
+
+A watch item is only useful once it has been read at the source. Each claim of the plan was checked against
+the paper's PDF and code, the model cards and the GIFT-Eval result files (checked on 2026-10-30).
+
+| Claim in the plan | What the source says | Verdict |
+|---|---|---|
+| IBM's three forecasters emit quantiles natively | True (FlowState 9, TTM-r3 new multi-quantile head, PatchTST-FM 99) | holds |
+| The GIFT-Eval leader has only 18.5M parameters | #1 on 12 April 2026 **only** with two filters (zero-shot, replication code); #13 today in that filter | partly, outdated |
+| The Complexity Router: higher accuracy, much lower cost | The headline ranks series by realised test MASE (an oracle). The deployed rule, on a holdout: 0.981 vs 0.989, 33% fewer FM calls | partly |
+| Specialists win on "physically constrained" systems | The paper's energy regime is 7 series of transformer oil temperature, not load | does not transfer |
+| The Substack classifies limits as workaround / not / open | Two groups only, published 24 April 2026 | partly |
+
+![](figures/router_claim.png)
+
+::: {.callout-warning title="Watch out: an oracle is not a policy"}
+Sorting series by their *realised* FM advantage and routing the best ones first gives the best possible
+curve, but it needs the test set's answer. The deployed rule, with thresholds learned on a calibration split,
+matches the FM's accuracy and saves a third of its calls. That is still useful, and much less than "70%".
+Block 3 evaluates its own router out of sample from the start.
+:::
+
+::: {.callout-note title="Contamination"}
+Chronos-2's training list has no ENTSO-E or OPSD data. Chronos-Bolt's corpus is not itemised. If it reuses
+the Chronos corpus, it contains Spanish national load 2015-2018, built from ENTSO-E: the same years and provider,
+another country. No overlap with French load is documented. All three weights are Apache-2.0; IBM's TTM-r3 is
+non-commercial (CC-BY-NC-SA-4.0).
+:::
+
+Sources and details: [`01_tech_watch/README.md`](https://github.com/gwils28/W25_tsfm_viability/blob/main/01_tech_watch/README.md).

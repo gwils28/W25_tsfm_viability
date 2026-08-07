@@ -9,3 +9,6 @@ data/interim/
 report/_freeze/
 report/.quarto/
 *.egg-info/
+results/router/forecasts.parquet
+report/figures/
+report/*.quarto_ipynb

@@ -1,0 +1,154 @@
+---
+title: "2 · Rolling-origin backtest"
+subtitle: "Chronos zero-shot against refitted statistical models, French hourly load"
+jupyter: w25
+---
+
+```{python}
+import pandas as pd
+from pathlib import Path
+from IPython.display import Markdown
+
+R = Path("../results")
+po = pd.read_parquet(R / "per_origin.parquet")
+test = po[po.period == "test"]
+LABELS = {
+    "seasonal_naive_24": "SeasonalNaive(24)", "seasonal_naive_168": "SeasonalNaive(168)",
+    "auto_ets": "AutoETS", "auto_ets_conformal": "AutoETS + conformal",
+    "auto_ets_seasonal": "ETS(Z,Z,A) (deviation)", "mstl": "MSTL",
+    "chronos_bolt_small": "Chronos-Bolt small", "chronos_bolt_base": "Chronos-Bolt base",
+    "chronos_bolt_base_conformal": "Bolt base + conformal", "chronos_2": "Chronos-2",
+}
+def md(df, digits=3):
+    return Markdown(df.round(digits).to_markdown())
+```
+
+The question of the plan is not "can I run a TSFM" but **when it beats a specialist and when it loses**,
+said with the coverage of its intervals and not only its mean MASE. Every step below answers part of that.
+
+## 1. Look at the series before modelling it
+
+![](figures/fr_overview.png)
+
+::: {.callout-note title="Intuition"}
+National load is a sum of millions of consumers. It is smooth from hour to hour, it repeats every day and
+every week, and in France it follows the temperature in winter (electric heating). A good forecaster
+reads three things: the current level, the daily shape and the weekly shape.
+:::
+
+![](figures/fr_profiles.png)
+
+![](figures/data_quality.png)
+
+::: {.callout-warning title="Watch out"}
+Raw ENTSO-E data contain one hour at 158 GW, against a national record of about 102 GW, and 9 gaps.
+A single such value in a target window would dominate a mean error. Values outside [20, 110] GW are set to
+missing. Gaps are filled **for inputs only**, and an imputed hour is never scored.
+:::
+
+## 2. Choose the baselines honestly
+
+![](figures/strawman_naive.png)
+
+The plan's naive repeats yesterday, so it forecasts Monday with Sunday. I expected it to be a strawman.
+The measurement says it beats the weekly naive on five weekdays out of seven, so both stay. The real specialist
+is **MSTL**, the only statistical model here that carries both cycles.
+
+## 3. The protocol: what each model may read
+
+![](figures/protocol.png)
+
+::: {.callout-note title="Example"}
+At the origin 2019-03-12 00:00 UTC, AutoETS is refitted on the 672 hours that end at 2019-03-11 23:00.
+Chronos-Bolt reads the 2048 hours that end at the same hour and is not refitted.
+Both forecast 2019-03-12 00:00 to 23:00, and the next day the origin moves by 24 hours.
+`tests/test_backtest.py` corrupts every value after an origin and checks that its forecast does not move.
+:::
+
+The protocol (origins, windows, metrics, verdict rule) was **committed before the first forecast**.
+Rule: a challenger beats the reference on a regime if the 95% block-bootstrap CI of its MASE ratio is below 1.
+It is "deployable as-is" if its 90% coverage is in [0.85, 0.95].
+
+## 4. The table the plan asks for
+
+```{python}
+cols = ["mase", "smape", "wape", "cov80", "cov90", "width90", "winkler90", "sql"]
+order = [m for m in LABELS if m in set(test.model)]
+t = test.groupby("model")[cols].mean().loc[order].rename(index=LABELS)
+md(t)
+```
+
+*sMAPE is utilsforecast's |e|/(|y|+|f|), half the textbook one. width90 is a fraction of the load.
+Winkler90 and SQL (scaled quantile loss over 0.1-0.9) are divided by the MASE scale.*
+
+![](figures/accuracy_vs_coverage.png)
+
+::: {.callout-warning title="Watch out: the reference forecasts a flat line"}
+AutoETS chooses its model by AICc, a **one-step** likelihood. On smooth hourly data, the level-only model wins
+at 572 of 608 origins and forecasts 24 times the last value. "Chronos beats AutoETS by a factor 4" is true but
+says little. A reference with forced seasonality (ETS Z,Z,A) was added **after** seeing this and is labelled
+as a deviation. Against it, the factor is 2.5.
+:::
+
+::: {.callout-warning title="Watch out: a flat line can be perfectly calibrated"}
+The flat AutoETS covers 0.899 of hours with its 90% interval, almost exactly nominal, because the interval is
+45% of the load wide. Coverage alone rewards a useless interval. The Winkler score, which charges the width,
+ranks it last.
+:::
+
+## 5. Where does the "90%" interval come from?
+
+![](figures/reliability.png)
+
+::: {.callout-important title="The trap of the plan, measured"}
+Chronos-Bolt was trained on 9 quantiles, 0.1 to 0.9. Asked for 0.05 and 0.95, it returns its 0.1 and 0.9:
+**its 90% interval is its 80% interval**. In the table, cov80 = cov90 = 0.858. It lands inside the band only
+because its 80% interval over-covers, and the CI of that coverage (0.833-0.884) crosses the band's edge.
+The pre-registered rule says WINS; the honest reading is "calibrated by accident".
+A split-conformal repair keeps its median and rebuilds the intervals from its own past errors: 0.902.
+:::
+
+## 6. By horizon and by regime
+
+![](figures/horizon_curves.png)
+
+![](figures/forest_regimes.png)
+
+```{python}
+v = pd.read_csv(R / "verdicts_by_regime.csv")
+h = v[(v.ref == "auto_ets_seasonal") & (v.regime == "holiday")][["model", "origins", "mase_ratio", "ratio_lo", "ratio_hi", "cov90", "verdict"]]
+md(h.set_index("model").rename(index=LABELS))
+```
+
+![](figures/fan_charts.png)
+
+::: {.callout-tip title="Takeaway: the one sentence of the plan"}
+On French hourly load in 2019, Chronos-Bolt base beats AutoETS at every horizon step and on every ordinary day
+type (MASE ratio 0.24, or 0.40 against a seasonal ETS), with a 90% coverage of 0.86. That interval is its 80%
+one by construction, and it under-covers on h 13-18 (0.79). **On public holidays it is no better than the
+seasonal ETS and its interval covers 37% of the hours: zero-shot, it does not know the calendar.**
+:::
+
+The specialists fail on holidays too, but a specialist can be **given** a holiday flag, while a zero-shot
+univariate TSFM cannot be told. The conformal repair does not save holidays (0.40), because it calibrates on
+average over the previous 56 days, not conditionally on a rare day.
+
+## 7. Six origins, as in the plan?
+
+![](figures/six_origins.png)
+
+With 6 origins drawn at random, the comparison against the seasonal ETS is right 99.8% of the time, since the
+gap is a factor 2.5. Against MSTL, the close contest, **a quarter of the draws reverse it**. The minimum of
+the plan detects large gaps and cannot settle close ones.
+
+## 8. Stress and sensitivity
+
+![](figures/stress_2020.png)
+
+![](figures/context_ablation.png)
+
+::: {.callout-note title="Exploratory, not pre-registered"}
+With one week of context, Bolt base (0.452) already beats MSTL fitted on eight weeks (0.479). That is the
+cold-start argument the router of block 3 tests across 50 series. The best context on 2019 (1024 h) is not adopted,
+because it was found on the test year.
+:::
