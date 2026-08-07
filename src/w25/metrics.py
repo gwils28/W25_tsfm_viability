@@ -55,7 +55,9 @@ def wide(fc: pd.DataFrame) -> tuple[pd.DataFrame, list[str]]:
     return w, models
 
 
-def mase_scale(history: pd.DataFrame, cuts: pd.Series, seasonality: int, chunk: int = 60) -> pd.Series:
+def mase_scale(
+    history: pd.DataFrame, cuts: pd.Series, seasonality: int, chunk: int = 60, uid: str = "FR"
+) -> pd.Series:
     """In-sample seasonal-naive MAE of the history up to each cutoff, via utilsforecast.mase.
 
     utilsforecast.mase returns MAE / scale; with a model equal to y + 1 the MAE is 1, so the
@@ -66,19 +68,19 @@ def mase_scale(history: pd.DataFrame, cuts: pd.Series, seasonality: int, chunk: 
     cuts = pd.Series(sorted(set(cuts)))
     for i in range(0, len(cuts), chunk):
         c = cuts.iloc[i : i + chunk]
-        probe = pd.DataFrame({"unique_id": "FR", "cutoff": c, "ds": c + pd.Timedelta(hours=1), "y": 0.0})
+        probe = pd.DataFrame({"unique_id": uid, "cutoff": c, "ds": c + pd.Timedelta(hours=1), "y": 0.0})
         probe["one"] = 1.0
         res = L.mase(probe, ["one"], seasonality, history, cutoff_col="cutoff")
         out.append(pd.Series(1.0 / res["one"].to_numpy(), index=res["cutoff"].to_numpy()))
     return pd.concat(out).rename("scale")
 
 
-def per_origin(fc: pd.DataFrame, actuals: pd.DataFrame, seasonality: int) -> pd.DataFrame:
-    """One row per (model, cutoff)."""
+def per_origin(fc: pd.DataFrame, actuals: pd.DataFrame, seasonality: int, uid: str = "FR") -> pd.DataFrame:
+    """One row per (model, cutoff), for the single series `uid`."""
     scored = attach_actuals(fc, actuals)
     w, models = wide(scored)
-    history = actuals[["ds", "y"]].assign(unique_id="FR")
-    scale = mase_scale(history, w.cutoff, seasonality)
+    history = actuals[["ds", "y"]].assign(unique_id=uid)
+    scale = mase_scale(history, w.cutoff, seasonality, uid=uid)
     by = {"cutoff_col": "cutoff"}
 
     def long(df: pd.DataFrame, name: str) -> pd.DataFrame:
