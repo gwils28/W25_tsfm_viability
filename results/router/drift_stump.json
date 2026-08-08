@@ -1,0 +1,9 @@
+{
+  "drift_stump": {
+    "loss": 0.6397727914832005,
+    "feature": "acf_24",
+    "threshold": 0.7725222416085729,
+    "tsfm_if_above": false
+  },
+  "drift_penalty": 0.15241379310344827
+}

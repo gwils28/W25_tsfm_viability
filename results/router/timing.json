@@ -1,0 +1,28 @@
+{
+  "168": {
+    "tsfm_gpu_s": 2.09,
+    "specialist_32cores_s": 12.98,
+    "forecasts": 3650
+  },
+  "336": {
+    "tsfm_gpu_s": 3.24,
+    "specialist_32cores_s": 13.44,
+    "forecasts": 3650
+  },
+  "672": {
+    "tsfm_gpu_s": 5.92,
+    "specialist_32cores_s": 26.25,
+    "forecasts": 3650
+  },
+  "2048": {
+    "tsfm_gpu_s": 18.01,
+    "specialist_32cores_s": 51.96,
+    "forecasts": 3650
+  },
+  "cpu_latency_ms_median": {
+    "tsfm_cpu4_ms@168": 24.344297002244275,
+    "specialist_cpu1_ms@168": 42.46502950263675,
+    "tsfm_cpu4_ms@2048": 94.82772500268766,
+    "specialist_cpu1_ms@2048": 182.84598199898028
+  }
+}
