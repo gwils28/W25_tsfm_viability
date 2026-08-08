@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from w25.router import country, features, fit_stump, leave_one_country_out, paper_rule
+from w25.router import FEATURES, country, features, fit_stump, leave_one_country_out, paper_rule
 
 T = np.arange(24 * 7 * 6)
 
@@ -67,3 +67,14 @@ def test_stump_finds_the_separating_feature_and_cv_is_by_country():
 def test_country_groups_zones():
     assert country("DE_amprion") == country("DE") == "DE"
     assert country("NO_3") == "NO"
+
+
+def test_penalty_reaches_the_stump_and_moves_the_route():
+    rng = np.random.default_rng(2)
+    n = 40
+    f = pd.DataFrame({c: rng.normal(size=n) for c in FEATURES})
+    loss_tsfm = np.full(n, 0.5)
+    loss_spec = np.full(n, 0.6)  # TSFM better everywhere by 0.1
+    units = f.assign(loss_tsfm=loss_tsfm, loss_spec=loss_spec, country=[f"C{i % 4}" for i in range(n)])
+    assert leave_one_country_out(units, 0.0).route_stump.all()
+    assert not leave_one_country_out(units, 0.5).route_stump.any()  # a call costs more than it earns

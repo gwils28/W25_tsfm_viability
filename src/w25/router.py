@@ -125,13 +125,16 @@ def paper_rule(f: pd.DataFrame) -> pd.Series:
     return votes >= 2
 
 
-def fit_stump(f: pd.DataFrame, loss_tsfm: np.ndarray, loss_spec: np.ndarray) -> dict:
+def fit_stump(f: pd.DataFrame, loss_tsfm: np.ndarray, loss_spec: np.ndarray, penalty: float = 0.0) -> dict:
     """One feature, one threshold, one direction, minimising the mean loss of the routed choice.
 
     Optimising the routed loss (not the classification accuracy) weights each unit by how much is at stake.
+    `penalty` is charged per series sent to the TSFM, in MASE units: the price of a call the router must
+    earn back in accuracy (0 = accuracy only, the pre-registered stump).
     """
+    loss_tsfm = loss_tsfm + penalty
     best = {"loss": float(np.mean(loss_spec))}  # default: always specialist
-    best |= {"feature": None, "threshold": None, "tsfm_if_above": None}
+    best |= {"feature": None, "threshold": None, "tsfm_if_above": False}
     if np.mean(loss_tsfm) < best["loss"]:
         best = {"loss": float(np.mean(loss_tsfm)), "feature": None, "threshold": None, "tsfm_if_above": True}
     for col in FEATURES:
@@ -159,7 +162,7 @@ def apply_stump(stump: dict, f: pd.DataFrame) -> np.ndarray:
     return above if stump["tsfm_if_above"] else ~above
 
 
-def leave_one_country_out(units: pd.DataFrame) -> pd.DataFrame:
+def leave_one_country_out(units: pd.DataFrame, penalty: float = 0.0) -> pd.DataFrame:
     """units: one row per (uid, history) with FEATURES, loss_tsfm, loss_spec. Adds the out-of-sample route."""
     units = units.copy()
     units["route_stump"] = False
@@ -170,6 +173,7 @@ def leave_one_country_out(units: pd.DataFrame) -> pd.DataFrame:
             units.loc[train],
             units.loc[train, "loss_tsfm"].to_numpy(),
             units.loc[train, "loss_spec"].to_numpy(),
+            penalty,
         )
         units.loc[test, "route_stump"] = apply_stump(st, units.loc[test])
         stumps.append({"held_out": c, **st})
