@@ -119,6 +119,7 @@ def per_origin(fc: pd.DataFrame, actuals: pd.DataFrame, seasonality: int, uid: s
     cols = [
         "model",
         "cutoff",
+        "mae",
         "mase",
         "smape",
         "wape",
