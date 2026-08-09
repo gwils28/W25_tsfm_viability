@@ -45,6 +45,9 @@ target-version = "py311"
 select = ["E", "F", "I", "B", "UP", "NPY"]
 ignore = ["B008"]  # typer declares options as argument defaults
 
+[tool.ruff.lint.per-file-ignores]
+"src/w25/figures_*.py" = ["E501"]  # labels and titles are text, not code
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 markers = ["slow: needs the real dataset or a model download"]
