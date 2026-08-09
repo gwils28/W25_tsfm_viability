@@ -56,7 +56,9 @@ def mape_vs_mase(out: Path) -> Path:
     ax.set_ylabel("metric (log scale)")
     ax.legend(loc="upper left", fontsize=8)
     ax.grid(axis="x", visible=False)
-    P.titled(ax, "MAPE grows by two orders of magnitude; MASE is identical", "MAPE and sMAPE in %, MASE unitless")
+    P.titled(
+        ax, "MAPE grows by two orders of magnitude; MASE is identical", "MAPE and sMAPE in %, MASE unitless"
+    )
     fig.tight_layout()
     return P.save(fig, out / "mape_vs_mase.png")
 
