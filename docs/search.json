@@ -1,0 +1,184 @@
+[
+  {
+    "objectID": "02_backtest.html",
+    "href": "02_backtest.html",
+    "title": "2 · Rolling-origin backtest",
+    "section": "",
+    "text": "The question of the plan is not “can I run a TSFM” but when it beats a specialist and when it loses, said with the coverage of its intervals and not only its mean MASE. Every step below answers part of that."
+  },
+  {
+    "objectID": "02_backtest.html#look-at-the-series-before-modelling-it",
+    "href": "02_backtest.html#look-at-the-series-before-modelling-it",
+    "title": "2 · Rolling-origin backtest",
+    "section": "1. Look at the series before modelling it",
+    "text": "1. Look at the series before modelling it\n\n\n\n\n\n\n\nNoteIntuition\n\n\n\nNational load is a sum of millions of consumers. It is smooth from hour to hour, it repeats every day and every week, and in France it follows the temperature in winter (electric heating). A good forecaster reads three things: the current level, the daily shape and the weekly shape.\n\n\n\n\n\n\n\n\n\n\nWarningWatch out\n\n\n\nRaw ENTSO-E data contain one hour at 158 GW, against a national record of about 102 GW, and 9 gaps. A single such value in a target window would dominate a mean error. Values outside [20, 110] GW are set to missing. Gaps are filled for inputs only, and an imputed hour is never scored."
+  },
+  {
+    "objectID": "02_backtest.html#choose-the-baselines-honestly",
+    "href": "02_backtest.html#choose-the-baselines-honestly",
+    "title": "2 · Rolling-origin backtest",
+    "section": "2. Choose the baselines honestly",
+    "text": "2. Choose the baselines honestly\n\nThe plan’s naive repeats yesterday, so it forecasts Monday with Sunday. I expected it to be a strawman. The measurement says it beats the weekly naive on five weekdays out of seven, so both stay. The real specialist is MSTL, the only statistical model here that carries both cycles."
+  },
+  {
+    "objectID": "02_backtest.html#the-protocol-what-each-model-may-read",
+    "href": "02_backtest.html#the-protocol-what-each-model-may-read",
+    "title": "2 · Rolling-origin backtest",
+    "section": "3. The protocol: what each model may read",
+    "text": "3. The protocol: what each model may read\n\n\n\n\n\n\n\nNoteExample\n\n\n\nAt the origin 2019-03-12 00:00 UTC, AutoETS is refitted on the 672 hours that end at 2019-03-11 23:00. Chronos-Bolt reads the 2048 hours that end at the same hour and is not refitted. Both forecast 2019-03-12 00:00 to 23:00, and the next day the origin moves by 24 hours. tests/test_backtest.py corrupts every value after an origin and checks that its forecast does not move.\n\n\nThe protocol (origins, windows, metrics, verdict rule) was committed before the first forecast. Rule: a challenger beats the reference on a regime if the 95% block-bootstrap CI of its MASE ratio is below 1. It is “deployable as-is” if its 90% coverage is in [0.85, 0.95]."
+  },
+  {
+    "objectID": "02_backtest.html#the-table-the-plan-asks-for",
+    "href": "02_backtest.html#the-table-the-plan-asks-for",
+    "title": "2 · Rolling-origin backtest",
+    "section": "4. The table the plan asks for",
+    "text": "4. The table the plan asks for\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nmodel\nmase\nsmape\nwape\ncov80\ncov90\nwidth90\nwinkler90\nsql\n\n\n\n\nSeasonalNaive(24)\n1.001\n0.03\n0.059\n0.824\n0.879\n0.293\n7.079\n0.429\n\n\nSeasonalNaive(168)\n1.084\n0.03\n0.061\n0.854\n0.915\n0.33\n6.917\n0.448\n\n\nAutoETS\n1.715\n0.053\n0.102\n0.772\n0.899\n0.45\n8.742\n0.669\n\n\nAutoETS + conformal\n1.715\n0.053\n0.102\n0.806\n0.908\n0.337\n6.342\n0.609\n\n\nETS(Z,Z,A) (deviation)\n1.01\n0.03\n0.061\n0.652\n0.736\n0.176\n6.955\n0.41\n\n\nMSTL\n0.479\n0.014\n0.028\n0.689\n0.779\n0.09\n3.494\n0.195\n\n\nChronos-Bolt small\n0.435\n0.013\n0.026\n0.859\n0.859\n0.088\n2.789\n0.173\n\n\nChronos-Bolt base\n0.406\n0.012\n0.024\n0.858\n0.858\n0.082\n2.653\n0.162\n\n\nBolt base + conformal\n0.406\n0.012\n0.024\n0.795\n0.902\n0.108\n2.722\n0.163\n\n\nChronos-2\n0.365\n0.01\n0.021\n0.761\n0.862\n0.076\n2.37\n0.146\n\n\n\n\n\nsMAPE is utilsforecast’s |e|/(|y|+|f|), half the textbook one. width90 is a fraction of the load. Winkler90 and SQL (scaled quantile loss over 0.1-0.9) are divided by the MASE scale.\n\n\n\n\n\n\n\nWarningWatch out: the reference forecasts a flat line\n\n\n\nAutoETS chooses its model by AICc, a one-step likelihood. On smooth hourly data, the level-only model wins at 572 of 608 origins and forecasts 24 times the last value. “Chronos beats AutoETS by a factor 4” is true but says little. A reference with forced seasonality (ETS Z,Z,A) was added after seeing this and is labelled as a deviation. Against it, the factor is 2.5.\n\n\n\n\n\n\n\n\nWarningWatch out: a flat line can be perfectly calibrated\n\n\n\nThe flat AutoETS covers 0.899 of hours with its 90% interval, almost exactly nominal, because the interval is 45% of the load wide. Coverage alone rewards a useless interval. The Winkler score, which charges the width, ranks it last."
+  },
+  {
+    "objectID": "02_backtest.html#where-does-the-90-interval-come-from",
+    "href": "02_backtest.html#where-does-the-90-interval-come-from",
+    "title": "2 · Rolling-origin backtest",
+    "section": "5. Where does the “90%” interval come from?",
+    "text": "5. Where does the “90%” interval come from?\n\n\n\n\n\n\n\nImportantThe trap of the plan, measured\n\n\n\nChronos-Bolt was trained on 9 quantiles, 0.1 to 0.9. Asked for 0.05 and 0.95, it returns its 0.1 and 0.9: its 90% interval is its 80% interval. In the table, cov80 = cov90 = 0.858. It lands inside the band only because its 80% interval over-covers, and the CI of that coverage (0.833-0.884) crosses the band’s edge. The pre-registered rule says WINS; the honest reading is “calibrated by accident”. A split-conformal repair keeps its median and rebuilds the intervals from its own past errors: 0.902."
+  },
+  {
+    "objectID": "02_backtest.html#by-horizon-and-by-regime",
+    "href": "02_backtest.html#by-horizon-and-by-regime",
+    "title": "2 · Rolling-origin backtest",
+    "section": "6. By horizon and by regime",
+    "text": "6. By horizon and by regime\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nmodel\norigins\nmase_ratio\nratio_lo\nratio_hi\ncov90\nverdict\n\n\n\n\nChronos-Bolt base\n11\n1.123\n0.909\n1.126\n0.367\nNO DIFFERENCE\n\n\nChronos-2\n11\n1.088\n0.886\n1.103\n0.352\nNO DIFFERENCE\n\n\n\n\n\n\n\n\n\n\n\n\nTipTakeaway: the one sentence of the plan\n\n\n\nOn French hourly load in 2019, Chronos-Bolt base beats AutoETS at every horizon step and on every ordinary day type (MASE ratio 0.24, or 0.40 against a seasonal ETS), with a 90% coverage of 0.86. That interval is its 80% one by construction, and it under-covers on h 13-18 (0.79). On public holidays it is no better than the seasonal ETS and its interval covers 37% of the hours: zero-shot, it does not know the calendar.\n\n\nThe specialists fail on holidays too, but a specialist can be given a holiday flag, while a zero-shot univariate TSFM cannot be told. The conformal repair does not save holidays (0.40), because it calibrates on average over the previous 56 days, not conditionally on a rare day."
+  },
+  {
+    "objectID": "02_backtest.html#six-origins-as-in-the-plan",
+    "href": "02_backtest.html#six-origins-as-in-the-plan",
+    "title": "2 · Rolling-origin backtest",
+    "section": "7. Six origins, as in the plan?",
+    "text": "7. Six origins, as in the plan?\n\nWith 6 origins drawn at random, the comparison against the seasonal ETS is right 99.8% of the time, since the gap is a factor 2.5. Against MSTL, the close contest, a quarter of the draws reverse it. The minimum of the plan detects large gaps and cannot settle close ones."
+  },
+  {
+    "objectID": "02_backtest.html#stress-and-sensitivity",
+    "href": "02_backtest.html#stress-and-sensitivity",
+    "title": "2 · Rolling-origin backtest",
+    "section": "8. Stress and sensitivity",
+    "text": "8. Stress and sensitivity\n\n\n\n\n\n\n\n\nNoteExploratory, not pre-registered\n\n\n\nWith one week of context, Bolt base (0.452) already beats MSTL fitted on eight weeks (0.479). That is the cold-start argument the router of block 3 tests across 50 series. The best context on 2019 (1024 h) is not adopted, because it was found on the test year."
+  },
+  {
+    "objectID": "04_mase.html",
+    "href": "04_mase.html",
+    "title": "4 · Reading: the MASE",
+    "section": "",
+    "text": "NoteIntuition\n\n\n\nAn error of 1,000 MW is large for Belgium and small for Germany. A percentage fixes that, but it breaks near zero. The MASE divides the error by the error a naive method made on the same series in the past. It answers “how much better than doing nothing clever?”, in a unit that is the same for every series.\n\\[\n\\text{MASE} = \\frac{\\frac{1}{h}\\sum_{j=1}^{h} |y_{T+j} - \\hat y_{T+j}|}{\\frac{1}{T-m}\\sum_{t=m+1}^{T} |y_t - y_{t-m}|}\n\\]\nThe 2006 paper defines it with m = 1 (one-step naive). The seasonal version with lag m is FPP3 section 5.8. This study uses m = 24."
+  },
+  {
+    "objectID": "04_mase.html#why-not-mape",
+    "href": "04_mase.html#why-not-mape",
+    "title": "4 · Reading: the MASE",
+    "section": "Why not MAPE",
+    "text": "Why not MAPE"
+  },
+  {
+    "objectID": "04_mase.html#why-not-smape-either",
+    "href": "04_mase.html#why-not-smape-either",
+    "title": "4 · Reading: the MASE",
+    "section": "Why not sMAPE either",
+    "text": "Why not sMAPE either\n\n\n\n\n\n\n\nWarningWatch out\n\n\n\nFor y = 100 and an error of 60, sMAPE gives 86% if the forecast is low and 46% if it is high. A model that over-forecasts looks better. utilsforecast’s smape is moreover half the textbook formula."
+  },
+  {
+    "objectID": "04_mase.html#what-scale-free-buys",
+    "href": "04_mase.html#what-scale-free-buys",
+    "title": "4 · Reading: the MASE",
+    "section": "What scale-free buys",
+    "text": "What scale-free buys"
+  },
+  {
+    "objectID": "04_mase.html#the-scale-is-a-choice",
+    "href": "04_mase.html#the-scale-is-a-choice",
+    "title": "4 · Reading: the MASE",
+    "section": "The scale is a choice",
+    "text": "The scale is a choice\n\n\n\n\n\n\n\nTipTakeaway\n\n\n\nWith m = 24, SeasonalNaive(24) scores 1.01: out of sample it repeats the method that defines the scale. With m = 1, the same forecasts score 1.72. “MASE below 1” only means something once m and the horizon are stated."
+  },
+  {
+    "objectID": "03_router.html",
+    "href": "03_router.html",
+    "title": "3 · The Complexity Router, out of sample",
+    "section": "",
+    "text": "NoteIntuition\n\n\n\nA router is a bet: for some series the shared zero-shot model is good enough, or better, and a dedicated model is a waste. For others, the dedicated model is worth its upkeep. The router is right if (a) such series exist and (b) it can recognise them before seeing the test period."
+  },
+  {
+    "objectID": "03_router.html#do-such-series-exist",
+    "href": "03_router.html#do-such-series-exist",
+    "title": "3 · The Complexity Router, out of sample",
+    "section": "Do such series exist?",
+    "text": "Do such series exist?\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nspecialist MASE\nTSFM MASE\nspecialist cov90\nTSFM cov90\n\n\n\n\n1 week\n1.213\n0.622\n0.737\n0.847\n\n\n2 weeks\n0.751\n0.542\n0.615\n0.838\n\n\n4 weeks\n0.645\n0.497\n0.779\n0.847\n\n\n12 weeks\n0.597\n0.479\n0.849\n0.85\n\n\n\n\n\nOn load, no. Chronos-2 wins on all 200 units, by 5% to 70%. The gap is widest in cold start, where the specialist cannot see two weekly cycles and its intervals under-cover badly.\n\n\n\n\n\n\nWarningWatch out: this is load against univariate specialists\n\n\n\nThe paper’s specialists are supervised models, and its “physical” regime is transformer oil temperature. A load specialist in production would have temperature and holiday inputs. This panel says nothing against such a specialist. It says that a univariate one refitted daily is beaten everywhere."
+  },
+  {
+    "objectID": "03_router.html#the-pre-registered-policies",
+    "href": "03_router.html#the-pre-registered-policies",
+    "title": "3 · The Complexity Router, out of sample",
+    "section": "The pre-registered policies",
+    "text": "The pre-registered policies\n\n\n\n\n\n\n\n\n\n\n\n\n\n\npolicy\nmase\ncov90\nshare_tsfm\ndiff_vs_tsfm\ndiff_lo\ndiff_hi\n\n\n\n\nalways_specialist\n0.801\n0.745\n0\n0.266\n0.243\n0.296\n\n\nalways_tsfm\n0.535\n0.846\n1\n0\n0\n0\n\n\npaper_rule\n0.566\n0.833\n0.92\n0.03\n0.014\n0.056\n\n\nlearned_stump\n0.535\n0.846\n1\n0\n0\n0\n\n\noracle\n0.535\n0.846\n1\n0\n0\n0\n\n\n\n\n\nThe paper’s thresholds, applied as published, keep 8% of series on the specialist and lose 0.030 MASE. The stump learned leave-one-country-out never finds a better split than “always TSFM”."
+  },
+  {
+    "objectID": "03_router.html#what-a-cost-aware-router-buys",
+    "href": "03_router.html#what-a-cost-aware-router-buys",
+    "title": "3 · The Complexity Router, out of sample",
+    "section": "What a cost-aware router buys",
+    "text": "What a cost-aware router buys\n\n\n\n\n\n\n\nImportantAn oracle is not a policy\n\n\n\nThe red curve sorts units by their realised gain: it is the best any router could do, and it needs the answer. The paper’s headline (0.970, a 70% cost cut) is such a curve. Out of sample, our stump stays within 0.015 MASE of it between 25% and 100% of TSFM calls. The paper’s rule sits above the random line.\n\n\nAnd the cost itself: Chronos-2 takes about 95 ms per series on 4 CPU threads, or about 5 ms in a GPU batch. An MSTL refit takes 183 ms on one core. The paper’s assumed 1000x ratio describes a specialist that only predicts. A specialist that refits every day costs as much as the TSFM."
+  },
+  {
+    "objectID": "03_router.html#the-router-drifts",
+    "href": "03_router.html#the-router-drifts",
+    "title": "3 · The Complexity Router, out of sample",
+    "section": "The router drifts",
+    "text": "The router drifts\n\n\n\n\n\n\n\nTipTakeaway\n\n\n\nRe-evaluated every 5 days on the trailing 4 weeks, a cost-aware rule on acf_24 moves 40 of 50 series and swings the TSFM share from 12% to 78%. A ±0.05 hysteresis band cuts the flips from 323 to 78. A router is a model: it needs its own monitoring, its own owner and versioned thresholds."
+  },
+  {
+    "objectID": "03_router.html#the-design",
+    "href": "03_router.html#the-design",
+    "title": "3 · The Complexity Router, out of sample",
+    "section": "The design",
+    "text": "The design\n\nThe 12-line reasoning the plan asks for is in 03_complexity_router/README.md."
+  },
+  {
+    "objectID": "01_watch.html",
+    "href": "01_watch.html",
+    "title": "1 · Tech watch, checked at the source",
+    "section": "",
+    "text": "A watch item is only useful once it has been read at the source. Each claim of the plan was checked against the paper’s PDF and code, the model cards and the GIFT-Eval result files (checked on 2026-10-30).\n\n\n\n\n\n\n\n\nClaim in the plan\nWhat the source says\nVerdict\n\n\n\n\nIBM’s three forecasters emit quantiles natively\nTrue (FlowState 9, TTM-r3 new multi-quantile head, PatchTST-FM 99)\nholds\n\n\nThe GIFT-Eval leader has only 18.5M parameters\n#1 on 12 April 2026 only with two filters (zero-shot, replication code); #13 today in that filter\npartly, outdated\n\n\nThe Complexity Router: higher accuracy, much lower cost\nThe headline ranks series by realised test MASE (an oracle). The deployed rule, on a holdout: 0.981 vs 0.989, 33% fewer FM calls\npartly\n\n\nSpecialists win on “physically constrained” systems\nThe paper’s energy regime is 7 series of transformer oil temperature, not load\ndoes not transfer\n\n\nThe Substack classifies limits as workaround / not / open\nTwo groups only, published 24 April 2026\npartly\n\n\n\n\n\n\n\n\n\n\nWarningWatch out: an oracle is not a policy\n\n\n\nSorting series by their realised FM advantage and routing the best ones first gives the best possible curve, but it needs the test set’s answer. The deployed rule, with thresholds learned on a calibration split, matches the FM’s accuracy and saves a third of its calls. That is still useful, and much less than “70%”. Block 3 evaluates its own router out of sample from the start.\n\n\n\n\n\n\n\n\nNoteContamination\n\n\n\nChronos-2’s training list has no ENTSO-E or OPSD data. Chronos-Bolt’s corpus is not itemised. If it reuses the Chronos corpus, it contains Spanish national load 2015-2018, built from ENTSO-E: the same years and provider, another country. No overlap with French load is documented. All three weights are Apache-2.0; IBM’s TTM-r3 is non-commercial (CC-BY-NC-SA-4.0).\n\n\nSources and details: 01_tech_watch/README.md."
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "When does a zero-shot TSFM beat a refitted specialist?",
+    "section": "",
+    "text": "The plan of the week (a French brief, ISO week 25 of 2026) asks one question: when does a time series foundation model beat a supervised specialist, and when does it lose? And how do we turn that decision into a production component? It asks for the answer in one sentence, backed by interval coverage and not only by a mean error."
+  },
+  {
+    "objectID": "index.html#the-answers",
+    "href": "index.html#the-answers",
+    "title": "When does a zero-shot TSFM beat a refitted specialist?",
+    "section": "The answers",
+    "text": "The answers\n\n\n\n\n\n\nTipBlock 2, the sentence the plan asks for\n\n\n\nOn French hourly load in 2019, Chronos-Bolt base beats AutoETS at every horizon step and on every ordinary day type (MASE ratio 0.24, or 0.40 against an ETS with forced seasonality), with a 90% coverage of 0.86. That interval is its 80% one by construction. It under-covers on h 13-18 (0.79). On public holidays it is no better than the seasonal ETS and covers 37% of hours: zero-shot, it does not know the calendar.\n\n\n\n\n\n\n\n\nTipBlock 3, the router\n\n\n\nOn 50 load series, Chronos-2 wins on all 200 (series, history) units, and most in cold start. The paper’s router thresholds lose accuracy out of sample. A router can only trade accuracy for a cost saving, and the measured cost of the specialist (a daily refit) is close to the TSFM’s. Its decision drifts: 40 of 50 series change branch over a year."
+  },
+  {
+    "objectID": "index.html#what-the-checks-changed",
+    "href": "index.html#what-the-checks-changed",
+    "title": "When does a zero-shot TSFM beat a refitted specialist?",
+    "section": "What the checks changed",
+    "text": "What the checks changed\n\n\n\n\n\n\n\nWhat I expected or what the sources said\nWhat the measurement says\n\n\n\n\nSeasonalNaive(24) is a strawman on load\nIt beats the weekly naive on 5 weekdays of 7\n\n\nAutoETS is a strong reference\nIt picks a level-only model at 572 of 608 origins (AICc is one-step) and forecasts a flat line\n\n\nBolt’s 90% interval covers 0.86, inside the band\nIt is the 80% interval: cov80 = cov90 = 0.858, in the band by accident\n\n\nA well-calibrated interval is a good interval\nThe flat AutoETS is the best-calibrated model (0.899) and the least useful (Winkler)\n\n\n6 origins (the plan’s minimum) are enough\nAgainst MSTL, 24% of 6-origin draws reverse the ranking\n\n\nThe router saves 70% of FM cost (paper)\nThat figure is an oracle; the deployed rule saves 33% (paper’s repo). Here no unit favours the specialist\n\n\nAn FM call costs 1000 specialist calls (paper)\n95 ms (4 threads) vs 183 ms (1 core) for an MSTL refit\n\n\nThe GIFT-Eval leader has 18.5M parameters\nTrue in April 2026 under two filters; #13 in October"
+  },
+  {
+    "objectID": "index.html#method",
+    "href": "index.html#method",
+    "title": "When does a zero-shot TSFM beat a refitted specialist?",
+    "section": "Method",
+    "text": "Method\n\nPre-registered protocols (block 2, block 3), committed before the first forecast. The one deviation (a seasonal ETS reference) is labelled wherever it appears.\nLeakage tests: every refit and every context ends at the cutoff; future values are corrupted in the tests to prove it. Chronos-2’s cross_learning is pinned off.\nUncertainty over origins (moving blocks of 7 days) and over countries (block 3), never over hours.\nReproducible: bit-identical forecasts run to run; CPU vs GPU within 0.016 MW."
+  },
+  {
+    "objectID": "index.html#pages",
+    "href": "index.html#pages",
+    "title": "When does a zero-shot TSFM beat a refitted specialist?",
+    "section": "Pages",
+    "text": "Pages\n\n1 · Watch: the three resources of the plan, read at the source\n2 · Backtest: the harness, the table, the regimes, the intervals\n3 · Router: the Complexity Router rebuilt and evaluated out of sample\n4 · MASE: the reference reading, on figures"
+  }
+]
