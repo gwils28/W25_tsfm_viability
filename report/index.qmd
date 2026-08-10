@@ -1,0 +1,55 @@
+---
+title: "When does a zero-shot TSFM beat a refitted specialist?"
+subtitle: "W25 · French hourly load, 50 European load series, Chronos-Bolt and Chronos-2 against statsforecast"
+---
+
+The plan of the week (a French brief, ISO week 25 of 2026) asks one question:
+**when does a time series foundation model beat a supervised specialist, and when does it lose? And how do we
+turn that decision into a production component?** It asks for the answer in one sentence, backed by interval
+coverage and not only by a mean error.
+
+## The answers
+
+::: {.callout-tip title="Block 2, the sentence the plan asks for"}
+On French hourly load in 2019, Chronos-Bolt base beats AutoETS at every horizon step and on every ordinary day type
+(MASE ratio 0.24, or 0.40 against an ETS with forced seasonality), with a 90% coverage of 0.86. That interval is
+its 80% one by construction. It under-covers on h 13-18 (0.79). On public holidays it is no better than the seasonal
+ETS and covers 37% of hours: **zero-shot, it does not know the calendar.**
+:::
+
+::: {.callout-tip title="Block 3, the router"}
+On 50 load series, Chronos-2 wins on all 200 (series, history) units, and most in cold start. The paper's router
+thresholds lose accuracy out of sample. A router can only trade accuracy for a cost saving, and the measured
+cost of the specialist (a daily refit) is close to the TSFM's. Its decision drifts: 40 of 50 series change
+branch over a year.
+:::
+
+## What the checks changed
+
+| What I expected or what the sources said | What the measurement says |
+|---|---|
+| SeasonalNaive(24) is a strawman on load | It beats the weekly naive on 5 weekdays of 7 |
+| AutoETS is a strong reference | It picks a level-only model at 572 of 608 origins (AICc is one-step) and forecasts a flat line |
+| Bolt's 90% interval covers 0.86, inside the band | It is the 80% interval: cov80 = cov90 = 0.858, in the band by accident |
+| A well-calibrated interval is a good interval | The flat AutoETS is the best-calibrated model (0.899) and the least useful (Winkler) |
+| 6 origins (the plan's minimum) are enough | Against MSTL, 24% of 6-origin draws reverse the ranking |
+| The router saves 70% of FM cost (paper) | That figure is an oracle; the deployed rule saves 33% (paper's repo). Here no unit favours the specialist |
+| An FM call costs 1000 specialist calls (paper) | 95 ms (4 threads) vs 183 ms (1 core) for an MSTL refit |
+| The GIFT-Eval leader has 18.5M parameters | True in April 2026 under two filters; #13 in October |
+
+## Method
+
+- Pre-registered protocols ([block 2](https://github.com/gwils28/W25_tsfm_viability/blob/main/configs/protocol.yaml),
+  [block 3](https://github.com/gwils28/W25_tsfm_viability/blob/main/configs/router.yaml)), committed before the
+  first forecast. The one deviation (a seasonal ETS reference) is labelled wherever it appears.
+- Leakage tests: every refit and every context ends at the cutoff; future values are corrupted in the tests to
+  prove it. Chronos-2's `cross_learning` is pinned off.
+- Uncertainty over origins (moving blocks of 7 days) and over countries (block 3), never over hours.
+- Reproducible: bit-identical forecasts run to run; CPU vs GPU within 0.016 MW.
+
+## Pages
+
+- [1 · Watch](01_watch.qmd): the three resources of the plan, read at the source
+- [2 · Backtest](02_backtest.qmd): the harness, the table, the regimes, the intervals
+- [3 · Router](03_router.qmd): the Complexity Router rebuilt and evaluated out of sample
+- [4 · MASE](04_mase.qmd): the reference reading, on figures
