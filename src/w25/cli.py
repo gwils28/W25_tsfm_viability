@@ -81,5 +81,42 @@ def ablation(rerun: bool = typer.Option(False, help="recompute instead of readin
     print(figure(ab, pd.read_parquet(RESULTS / "per_origin.parquet"), BLOCK2 / "figures"))
 
 
+@app.command()
+def router(rerun: bool = typer.Option(True, help="recompute both branches")) -> None:
+    """Block 3: both branches on the panel, the routing units, policies, frontier and drift figures."""
+    import pandas as pd
+
+    from w25.data import RAW
+    from w25.router import load_panel
+    from w25.router_eval import run_all
+    from w25.router_run import OUT, load_cfg, run, units
+
+    cfg = load_cfg()
+    panel = load_panel(cfg, RAW)
+    if rerun:
+        run(cfg)
+    units(cfg, panel, pd.read_parquet(OUT / "per_origin.parquet"))
+    print(run_all(cfg, panel, Path("03_complexity_router/figures")))
+    print(pd.read_csv(OUT / "policies.csv").query("history == 'all'").to_string(index=False))
+
+
+@app.command()
+def figures_misc() -> None:
+    """Figures of blocks 1, 3 (architecture) and 4."""
+    from w25 import plots as P
+    from w25.figures_design import architecture
+    from w25.figures_mase import mape_vs_mase, scale_choice, scale_free_panel, smape_asymmetry
+    from w25.figures_watch import router_claim
+
+    P.setup()
+    router_claim(Path("01_tech_watch/figures"))
+    architecture(Path("03_complexity_router/figures"))
+    out = Path("04_reference_reading/figures")
+    mape_vs_mase(out)
+    smape_asymmetry(out)
+    scale_choice(out)
+    scale_free_panel(out)
+
+
 if __name__ == "__main__":
     app()
