@@ -25,3 +25,32 @@ Newest last.
 - Bolt's "90%" interval is its 80% one (blind spot 1): cov80 = cov90 = 0.858 over the test year. It lands inside
   the pre-registered band [0.85, 0.95] because its 80% interval over-covers; the CI of that coverage
   (0.833-0.884) crosses the band's lower edge. The rule says WINS; the reading says "by accident".
+- The conformal repair is applied to AutoETS too, not only to the challenger, so that "repaired intervals"
+  is not an advantage given to one side.
+- Context length was explored after the results (`w25 ablation`) and is labelled exploratory; the protocol's
+  2048 h is kept although 1024 h scores better on 2019, since that choice would be made on the test year.
+
+## Block 3
+
+- **The specialist is univariate.** The paper's specialists are supervised models with features; a production
+  load model would have temperature and calendar inputs. The block answers "zero-shot TSFM vs a refitted
+  univariate specialist", and says so.
+- **The cost-aware router is an extension**, not in `configs/router.yaml`. It was added because the
+  pre-registered stump collapsed to always-TSFM (no unit favours the specialist), which leaves cost as the only
+  thing a router can trade.
+- **Bug found and fixed: the penalty never reached the stump.** A text patch targeted a call that ruff had
+  reformatted, matched nothing, and failed silently, so every "cost-aware" fit was the accuracy-only stump (a flat
+  frontier). Caught because the flat frontier was impossible; `test_penalty_reaches_the_stump_and_moves_the_route`
+  now guards it. Patches since then assert their anchor.
+- **Train/serve skew in the first drift figure.** The drift stump was first fitted on 2048-h features and applied
+  to trailing 672-h features; spectral entropy depends on the window, so the thresholds did not transfer
+  (4-20% routed to the TSFM instead of about 56%). It is now fitted on the 672-h units. Kept as a monitoring
+  lesson in the README.
+- The physical range check of the panel is relative to each series' median ([0.2, 3] x median), for lack of
+  per-country records.
+
+## Repository
+
+- `src/w25/run.py` was used from the first backtest but only committed later (commit "Add the backtest runner
+  that the CLI imports"); every commit before that one cannot run `w25 forecast` from a fresh clone.
+- `per_origin` now also keeps the MAE in MW; the results were re-scored from the stored forecasts.

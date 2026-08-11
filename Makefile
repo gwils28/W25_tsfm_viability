@@ -27,4 +27,4 @@ report:
 	   04_reference_reading/figures/*.png report/figures/
 	cd report && QUARTO_PYTHON=../.venv/bin/python quarto render
 
-all: forecast backtest figures router report
+all: forecast backtest router figures report  # router before figures: block 4 reads its results
