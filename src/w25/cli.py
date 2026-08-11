@@ -118,5 +118,20 @@ def figures_misc() -> None:
     scale_free_panel(out)
 
 
+@app.command()
+def calendar(
+    rerun: bool = typer.Option(False, help="recompute instead of reading the stored scores"),
+) -> None:
+    """EXPLORATORY: Chronos-2 with known holiday and bridge-day flags as covariates (block 2)."""
+    import pandas as pd
+
+    from w25.calendar_cov import figure, run
+    from w25.config import RESULTS
+
+    po = run(load_protocol()) if rerun else pd.read_parquet(RESULTS / "per_origin_calendar.parquet")
+    print(po.groupby("day_type")[["mase", "cov90"]].mean().round(3))
+    print(figure(po, BLOCK2 / "figures"))
+
+
 if __name__ == "__main__":
     app()
