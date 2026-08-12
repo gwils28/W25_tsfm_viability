@@ -133,6 +133,27 @@ The specialists fail on holidays too, but a specialist can be **given** a holida
 univariate TSFM cannot be told. The conformal repair does not save holidays (0.40), because it calibrates on
 average over the previous 56 days, not conditionally on a rare day.
 
+### Can it be told? (exploratory)
+
+![](figures/calendar_covariates.png)
+
+```{python}
+cal = pd.read_parquet(R / "per_origin_calendar.parquet")
+c2 = test[test.model == "chronos_2"]
+rows = {
+    "Chronos-2 zero-shot": [c2.mase.mean(), c2.cov90.mean(), c2[c2.day_type == "holiday"].mase.mean(), c2[c2.day_type == "holiday"].cov90.mean()],
+    "+ holiday and bridge flags": [cal.mase.mean(), cal.cov90.mean(), cal[cal.day_type == "holiday"].mase.mean(), cal[cal.day_type == "holiday"].cov90.mean()],
+}
+md(pd.DataFrame(rows, index=["MASE", "cov90", "holidays MASE", "holidays cov90"]).T)
+```
+
+::: {.callout-note title="Exploratory, found after the results"}
+Chronos-2 accepts known future covariates. Two 0/1 flags (public holiday, bridge day), known in advance, halve
+its holiday error (ratio 0.52 [0.39, 0.67]) and bring its yearly 90% coverage to 0.899. Holiday coverage, 0.77
+[0.64, 0.89], is below the band as an estimate. "Zero-shot" does not have to mean "blind": the limit found above is that of a
+**univariate** zero-shot model. A pre-registered test on another year should confirm it before any client sees it.
+:::
+
 ## 7. Six origins, as in the plan?
 
 ![](figures/six_origins.png)

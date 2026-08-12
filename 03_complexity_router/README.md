@@ -7,23 +7,25 @@ sample, one country left out at a time.
 
 ## The reasoning (the plan's deliverable)
 
-1. **Routing feature that matters: the history length.** With 1 week of history, the TSFM's mean MASE is 0.62
-   against 1.21 for the specialist. With 12 weeks it is 0.48 against 0.60. History length is the only feature
-   whose rank correlation with the TSFM's gain is strong (rho = -0.62). Seasonal strength and ACF come next
-   (-0.28, -0.43); the paper's CV and entropy say almost nothing here (-0.03, -0.26).
+1. **Routing feature that predicts the size of the TSFM's gain: the history length.** With 1 week of history,
+   the TSFM's mean MASE is 0.62 against 1.21 for the specialist; with 12 weeks, 0.48 against 0.60. Rank correlation
+   with the gain: history length -0.62, acf_168 -0.56, acf_24 -0.43, seasonal strength 24 +0.42 and 168 -0.28; the
+   paper's CV and entropy say little here (-0.03, -0.26). Several of these move with the history length itself.
 2. **Intermittency and physical constraints cannot be tested on national load**: the panel has neither.
    They stay candidate features for other portfolios and are not invented here.
-3. **The threshold I can justify is "4 weeks of history"**: below it the specialist cannot see two weekly
-   cycles and under-covers (0.62 coverage at 2 weeks). The paper's thresholds (entropy 0.24, CV 0.22...) do not
-   transfer. Applied as published, they send 8% of series to the specialist and lose 0.030 MASE [0.014, 0.056].
+3. **No threshold can be justified on accuracy, and the plan says what that means**: the TSFM wins at every
+   history length, so a cut on any feature only moves series to the losing branch. The feature predicts how much
+   the TSFM gains, not whether it wins. The paper's thresholds (entropy 0.24, CV 0.22...) do not transfer: applied as
+   published, they send 8% of series to the specialist and lose 0.030 MASE [0.014, 0.056].
 4. **Accuracy vs cost: on load, the TSFM wins on 200 of 200 units** (gain 5% to 70%). A router can only buy
    cost savings with accuracy: 22% fewer TSFM calls cost 5% of MASE, 44% fewer cost 11%.
 5. **And the cost premise is not true here.** Chronos-2 takes about 95 ms per series on 4 CPU threads, or about
    5 ms in a GPU batch. An MSTL refit takes 183 ms on one core. The paper's "an FM call costs 1000 specialist calls"
    holds for a specialist that only predicts; it does not hold for one that is refitted at each forecast.
 6. **Contract:** both branches in **daily batch** (day-ahead), SLA 15 min for 10^4 series. Real time only for
-   intraday re-forecasts, on the TSFM branch (no refit). The specialist is reserved for **days a calendar flag
-   predicts** (holidays, block 2: the TSFM covers 37% of hours there), once it is given that flag.
+   intraday re-forecasts, on the TSFM branch (no refit). Holidays, where the zero-shot TSFM covers 37% of hours
+   (block 2), are handled by **giving the TSFM the calendar**, not by switching branch: with a holiday flag as a
+   covariate, Chronos-2 halves its holiday error (exploratory, block 2 section 9).
 7. **Fallback:** TSFM timeout or NaN, then the specialist. Specialist fit failure or H < 2 days, then the TSFM.
    Both failing: SeasonalNaive(24) plus a flag in the payload. Every forecast carries its route and its model version.
 8. **The senior trap, measured:** with features on the trailing 4 weeks, a cost-aware rule on acf_24 changes the
@@ -36,7 +38,7 @@ sample, one country left out at a time.
     features do not match. Spectral entropy depends on the window. Fit and serve on the same window.
 11. **Who arbitrates:** one named owner of the router. A threshold change is a versioned release, evaluated
     out of sample like a model, never a hot fix.
-12. **Verdict for this portfolio:** default to the TSFM, route to the specialist on known calendar events and as
+12. **Verdict for this portfolio:** the TSFM for every series, with the calendar as a covariate; the specialist as
     the fallback, and do not deploy a complexity router whose only gain is a cost that the measurement does not show.
 
 ![Architecture](figures/router_architecture.png)

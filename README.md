@@ -13,8 +13,11 @@ code are in [`SPEC.md`](SPEC.md), and the deviations and corrections in
 > On French hourly load in 2019, Chronos-Bolt base beats AutoETS at every horizon step and on every ordinary day
 > type: MASE ratio 0.24 [0.20, 0.27], or 0.40 against an ETS with forced seasonality, and its 90% coverage is
 > 0.86. That "90%" interval is its 80% one by construction. It under-covers on h 13-18 (0.79). On the 11 public
-> holidays it is no better than the seasonal ETS (ratio 1.12, CI 0.91-1.13) and covers 37% of the hours:
+> holidays it is no better than the seasonal ETS (ratio 1.12, CI 0.85-1.55) and covers 37% of the hours:
 > zero-shot, it does not know the calendar.
+>
+> Told the calendar (a holiday flag as a known covariate, exploratory), Chronos-2 halves its holiday error and
+> its 90% coverage over the year becomes 0.899.
 
 ![Accuracy and calibration](02_backtest_harness/figures/accuracy_vs_coverage.png)
 
@@ -26,6 +29,7 @@ code are in [`SPEC.md`](SPEC.md), and the deviations and corrections in
 | `AutoETS` as the reference | statsforecast selects ETS(A,N,N) by AICc (a one-step criterion) at 572 of 608 origins: a flat 24-h forecast. The verdict against it is reported as pre-registered, and again against an ETS with forced seasonality (declared deviation) | [2](02_backtest_harness/README.md) |
 | "Use the TSFM's quantiles" for a 90% interval | Chronos-Bolt is trained on 0.1-0.9: asked for 0.05/0.95 it returns its 80% interval (cov80 = cov90 = 0.858). Chronos-2 is trained on 0.01-0.99. A conformal repair gives 0.902 | [2](02_backtest_harness/README.md) |
 | "If the TSFM wins on MASE but covers 70%, say it" | It wins on MASE and covers 0.86 overall, but 0.79 on h 13-18 and 0.37 on public holidays. The flat AutoETS covers 0.899: coverage alone rewards a useless interval | [2](02_backtest_harness/README.md) |
+| Zero-shot, the TSFM does not know the calendar (my block 2 sentence) | It can be told: with a holiday flag as a known covariate (exploratory), Chronos-2's holiday error halves (0.52 [0.39, 0.67]) and its yearly 90% coverage reaches 0.899 | [2](02_backtest_harness/README.md) |
 | ">= 6 origins" | 365 daily origins. With 6, 24% of random draws reverse the Bolt vs MSTL ranking | [2](02_backtest_harness/README.md) |
 | Foundation models excel in cold start (paper) | Confirmed on 50 load series: MASE 0.62 vs 1.21 with one week of history | [3](03_complexity_router/README.md) |
 | The Complexity Router gives better accuracy at much lower cost (paper) | The headline is an oracle ranking; the deployed rule (paper's repo) saves 33%. Here the TSFM wins on all 200 units, the paper's thresholds lose 0.030 MASE out of sample, and a router can only trade accuracy for cost | [1](01_tech_watch/README.md), [3](03_complexity_router/README.md) |

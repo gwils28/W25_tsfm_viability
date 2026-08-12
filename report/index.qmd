@@ -15,6 +15,8 @@ On French hourly load in 2019, Chronos-Bolt base beats AutoETS at every horizon 
 (MASE ratio 0.24, or 0.40 against an ETS with forced seasonality), with a 90% coverage of 0.86. That interval is
 its 80% one by construction. It under-covers on h 13-18 (0.79). On public holidays it is no better than the seasonal
 ETS and covers 37% of hours: **zero-shot, it does not know the calendar.**
+Told the calendar (a holiday flag as a known covariate, exploratory), Chronos-2 halves its holiday error and its
+yearly 90% coverage becomes 0.899.
 :::
 
 ::: {.callout-tip title="Block 3, the router"}
