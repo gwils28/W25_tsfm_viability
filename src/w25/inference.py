@@ -32,8 +32,30 @@ def ratio_of_means(a: np.ndarray, b: np.ndarray) -> float:
     return float(np.mean(a) / np.mean(b))
 
 
-def verdict(ratio_hi: float, ratio_lo: float, cov90: float, band: tuple[float, float]) -> str:
+# DEVIATION (added after the review): below this many origins no verdict is given; the protocol did not say.
+MIN_ORIGINS = 10
+
+
+def block_length(cutoffs, block_days: int) -> int:
+    """Block length in elements equivalent to `block_days` calendar days for this set of origins.
+
+    The protocol asks for blocks of 7 days. For daily origins that is 7 elements; for a sparse regime (11
+    holidays over a year) it is 1 element: holidays weeks apart are close to independent, and 7-element
+    blocks would allow only a few dozen distinct resamples.
+    """
+    c = pd.DatetimeIndex(cutoffs).sort_values()
+    if len(c) < 2:
+        return 1
+    span_days = (c[-1] - c[0]) / pd.Timedelta(days=1) + 1
+    return max(1, round(block_days * len(c) / span_days))
+
+
+def verdict(
+    ratio_hi: float, ratio_lo: float, cov90: float, band: tuple[float, float], n: int | None = None
+) -> str:
     """Pre-registered reading of one challenger against the reference on one regime."""
+    if n is not None and n < MIN_ORIGINS:
+        return "TOO FEW ORIGINS"
     if ratio_hi < 1:
         return "WINS" if band[0] <= cov90 <= band[1] else "WINS ON POINTS ONLY"
     if ratio_lo > 1:
@@ -49,15 +71,17 @@ def compare(
     return bootstrap(
         ratio_of_means,
         [p[challenger].to_numpy(), p[reference].to_numpy()],
-        boot["block_days"],
+        block_length(p.index, boot["block_days"]),
         boot["replicates"],
         boot["seed"],
         ci,
     )
 
 
-def mean_ci(values: np.ndarray, boot: dict, ci: float = 0.95) -> tuple[float, float, float]:
-    return bootstrap(np.mean, [np.asarray(values)], boot["block_days"], boot["replicates"], boot["seed"], ci)
+def mean_ci(values: np.ndarray, boot: dict, ci: float = 0.95, cutoffs=None) -> tuple[float, float, float]:
+    """Mean with its CI; `values` in time order. Without `cutoffs`, origins are consecutive days."""
+    block = boot["block_days"] if cutoffs is None else block_length(cutoffs, boot["block_days"])
+    return bootstrap(np.mean, [np.asarray(values)], block, boot["replicates"], boot["seed"], ci)
 
 
 def small_sample_agreement(

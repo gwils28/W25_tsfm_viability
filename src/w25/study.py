@@ -73,8 +73,9 @@ def verdicts(
     for g, d in groups:
         for ch in [m for m in ORDER if m in set(d.model) and not m.startswith(ref)]:
             r, lo, hi = compare(d, ch, ref, "mase", v["bootstrap"], v["ratio_ci"])
-            cov = d[d.model == ch].sort_values("cutoff").cov90.to_numpy()
-            c, clo, chi = mean_ci(cov, v["bootstrap"])
+            dc = d[d.model == ch].sort_values("cutoff")
+            cov = dc.cov90.to_numpy()
+            c, clo, chi = mean_ci(cov, v["bootstrap"], cutoffs=dc.cutoff)
             rows.append(
                 {
                     "regime": g,
@@ -86,7 +87,7 @@ def verdicts(
                     "cov90": c,
                     "cov90_lo": clo,
                     "cov90_hi": chi,
-                    "verdict": verdict(hi, lo, c, tuple(v["coverage90_band"])),
+                    "verdict": verdict(hi, lo, c, tuple(v["coverage90_band"]), len(cov)),
                 }
             )
     return pd.DataFrame(rows)

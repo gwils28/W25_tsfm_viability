@@ -1,7 +1,14 @@
 import numpy as np
 import pandas as pd
 
-from w25.inference import block_indices, bootstrap, ratio_of_means, small_sample_agreement, verdict
+from w25.inference import (
+    block_indices,
+    block_length,
+    bootstrap,
+    ratio_of_means,
+    small_sample_agreement,
+    verdict,
+)
 from w25.regimes import label, period
 
 
@@ -66,3 +73,17 @@ def test_small_samples_disagree_more_than_large_ones():
     a6, _ = small_sample_agreement(po, "c", "r", 6, 1000, 0)
     a60, _ = small_sample_agreement(po, "c", "r", 60, 1000, 0)
     assert a6 < a60 <= 1
+
+
+def test_block_length_is_in_days_not_elements():
+    daily = pd.date_range("2019-01-01", periods=365, freq="D", tz="UTC")
+    assert block_length(daily, 7) == 7
+    sparse = daily[::33]  # 12 origins spread over the year, like public holidays
+    assert block_length(sparse, 7) == 1
+    weekly = daily[::7]  # one weekday: 7 days = 1 element
+    assert block_length(weekly, 7) == 1
+
+
+def test_too_few_origins_get_no_verdict():
+    assert verdict(0.5, 0.4, 0.9, (0.85, 0.95), n=2) == "TOO FEW ORIGINS"
+    assert verdict(0.5, 0.4, 0.9, (0.85, 0.95), n=50) == "WINS"
