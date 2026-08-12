@@ -348,7 +348,7 @@ def stress(po: pd.DataFrame, proto: dict, out: Path) -> Path:
     P.titled(
         ax,
         "January to June 2020: a regime nobody was trained on",
-        "every model is hit for about a week after 17 March, then recovers; the daily naive's error halves",
+        "every model is hit for about a week after 17 March, then recovers; the daily naive's error falls by a third",
     )
     return P.save(fig, out / "stress_2020.png")
 
