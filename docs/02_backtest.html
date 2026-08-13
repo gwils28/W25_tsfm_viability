@@ -398,7 +398,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="the-table-the-plan-asks-for" class="level2">
 <h2 class="anchored" data-anchor-id="the-table-the-plan-asks-for">4. The table the plan asks for</h2>
-<div id="a5794dcd" class="cell" data-execution_count="2">
+<div id="c1e09da9" class="cell" data-execution_count="2">
 <div class="cell-output cell-output-display cell-output-markdown" data-execution_count="2">
 <table class="caption-top table table-sm table-striped small">
 <colgroup>
@@ -590,7 +590,7 @@ ul.task-list li input[type="checkbox"] {
 <h2 class="anchored" data-anchor-id="by-horizon-and-by-regime">6. By horizon and by regime</h2>
 <p><img src="figures/horizon_curves.png" class="img-fluid"></p>
 <p><img src="figures/forest_regimes.png" class="img-fluid"></p>
-<div id="9ad1f15b" class="cell" data-execution_count="3">
+<div id="0a326a65" class="cell" data-execution_count="3">
 <div class="cell-output cell-output-display cell-output-markdown" data-execution_count="3">
 <table class="caption-top table table-sm table-striped small">
 <colgroup>
@@ -618,8 +618,8 @@ ul.task-list li input[type="checkbox"] {
 <td style="text-align: left;">Chronos-Bolt base</td>
 <td style="text-align: right;">11</td>
 <td style="text-align: right;">1.123</td>
-<td style="text-align: right;">0.909</td>
-<td style="text-align: right;">1.126</td>
+<td style="text-align: right;">0.854</td>
+<td style="text-align: right;">1.553</td>
 <td style="text-align: right;">0.367</td>
 <td style="text-align: left;">NO DIFFERENCE</td>
 </tr>
@@ -627,8 +627,8 @@ ul.task-list li input[type="checkbox"] {
 <td style="text-align: left;">Chronos-2</td>
 <td style="text-align: right;">11</td>
 <td style="text-align: right;">1.088</td>
-<td style="text-align: right;">0.886</td>
-<td style="text-align: right;">1.103</td>
+<td style="text-align: right;">0.805</td>
+<td style="text-align: right;">1.48</td>
 <td style="text-align: right;">0.352</td>
 <td style="text-align: left;">NO DIFFERENCE</td>
 </tr>
@@ -651,6 +651,61 @@ ul.task-list li input[type="checkbox"] {
 </div>
 </div>
 <p>The specialists fail on holidays too, but a specialist can be <strong>given</strong> a holiday flag, while a zero-shot univariate TSFM cannot be told. The conformal repair does not save holidays (0.40), because it calibrates on average over the previous 56 days, not conditionally on a rare day.</p>
+<section id="can-it-be-told-exploratory" class="level3">
+<h3 class="anchored" data-anchor-id="can-it-be-told-exploratory">Can it be told? (exploratory)</h3>
+<p><img src="figures/calendar_covariates.png" class="img-fluid"></p>
+<div id="7a6ec0a3" class="cell" data-execution_count="4">
+<div class="cell-output cell-output-display cell-output-markdown" data-execution_count="4">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 35%">
+<col style="width: 10%">
+<col style="width: 11%">
+<col style="width: 21%">
+<col style="width: 22%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: right;">MASE</th>
+<th style="text-align: right;">cov90</th>
+<th style="text-align: right;">holidays MASE</th>
+<th style="text-align: right;">holidays cov90</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Chronos-2 zero-shot</td>
+<td style="text-align: right;">0.365</td>
+<td style="text-align: right;">0.862</td>
+<td style="text-align: right;">1.446</td>
+<td style="text-align: right;">0.352</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">+ holiday and bridge flags</td>
+<td style="text-align: right;">0.331</td>
+<td style="text-align: right;">0.899</td>
+<td style="text-align: right;">0.745</td>
+<td style="text-align: right;">0.769</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="callout callout-style-simple callout-note callout-titled" title="Exploratory, found after the results">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Exploratory, found after the results
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Chronos-2 accepts known future covariates. Two 0/1 flags (public holiday, bridge day), known in advance, halve its holiday error (ratio 0.52 [0.39, 0.67]) and bring its yearly 90% coverage to 0.899. Holiday coverage, 0.77 [0.64, 0.89], is below the band as an estimate. “Zero-shot” does not have to mean “blind”: the limit found above is that of a <strong>univariate</strong> zero-shot model. A pre-registered test on another year should confirm it before any client sees it.</p>
+</div>
+</div>
+</section>
 </section>
 <section id="six-origins-as-in-the-plan" class="level2">
 <h2 class="anchored" data-anchor-id="six-origins-as-in-the-plan">7. Six origins, as in the plan?</h2>
