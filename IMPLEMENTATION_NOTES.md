@@ -54,3 +54,26 @@ Newest last.
 - `src/w25/run.py` was used from the first backtest but only committed later (commit "Add the backtest runner
   that the CLI imports"); every commit before that one cannot run `w25 forecast` from a fresh clone.
 - `per_origin` now also keeps the MAE in MW; the results were re-scored from the stored forecasts.
+
+## Independent review (fresh context, correctness only)
+
+No look-ahead leak and no material metric error found; about 45 numbers of the READMEs recomputed from
+`results/` and matching. What it found, and what was done:
+
+- **Degenerate bootstrap on sparse regimes (fixed).** Blocks were 7 *elements* of the regime's origins, so for
+  the 11 holidays a block spanned months and only 25 distinct resamples existed; the holiday CI "0.91-1.13" had
+  the point estimate on its upper bound. Blocks now cover 7 calendar days, as the protocol says
+  (`inference.block_length`). Readings that changed: holidays vs seasonal ETS 1.12 [0.85, 1.55]; Mondays vs MSTL
+  from NO DIFFERENCE to WINS ON POINTS ONLY [0.77, 0.96]; calendar flags on holidays 0.52 [0.39, 0.67].
+- **No verdict below 10 origins** (bridge days, n = 2). A guard the protocol did not state: a deviation.
+- **False claim removed:** "the TSFMs start with a third of MSTL's error at h = 1". At h = 1 Bolt base equals MSTL
+  (ratio 1.00) and Chronos-2 is 0.77 of it.
+- **Block 3, the "4 weeks" threshold withdrawn.** Two weeks already hold two weekly cycles, the specialist's
+  coverage shows no break at 4 weeks, and the TSFM wins at every history length: the data justify no threshold,
+  which the README now says, as the plan asks.
+- Rounding of two CI bounds, and "the daily naive's error halves" under lockdown (it falls by a third).
+- Not changed, recorded: (1) the 24 h window of an origin runs 1-2 night hours into the next Paris date, while
+  the regime is the date of the first hour; (2) the panel's median-based range check uses a median that includes
+  2019 (it changes 2 hours); (3) linear filling of gaps up to 3 h could read one hour after a cutoff if a gap
+  straddled it. None does in the French series or in the panel (checked), so no result is affected, but the
+  filling would have to be causal in production.
