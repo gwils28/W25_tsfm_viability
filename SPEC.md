@@ -60,3 +60,14 @@ They are named as next steps where they would change a conclusion.
   not only mean MASE, with a confidence interval.
 - Every figure in the report is produced by code in the repo from committed results.
 - `uv run pytest` green; `uv run ruff check` clean.
+
+## Status of the success criteria (2026-08-14)
+
+| Criterion | Status |
+|---|---|
+| Table reprinted identically | Met: two GPU runs give bit-identical forecasts; CPU vs GPU differ by at most 0.016 MW. The models are deterministic, so the seed is not what makes it reproducible |
+| One sentence, with coverage and a CI | Met: [`02_backtest_harness/README.md`](02_backtest_harness/README.md), first section. The holiday CI was degenerate in the first version and was corrected after the review |
+| Every figure produced by code from committed results | Met: `make figures`, except the router figures, which need `w25 router` (the panel forecasts, 57 MB, are not committed) |
+| Tests and lint | Met: 31 fast tests, 4 slow tests (real Chronos weights, real data), ruff clean, CI on every push |
+
+Blind spot 3 was wrong as stated (see `IMPLEMENTATION_NOTES.md`); the other eleven held.
