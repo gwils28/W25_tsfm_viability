@@ -1,5 +1,7 @@
 # W25: when does a zero-shot TSFM beat a refitted specialist?
 
+[![ci](https://github.com/gwils28/W25_tsfm_viability/actions/workflows/ci.yml/badge.svg)](https://github.com/gwils28/W25_tsfm_viability/actions/workflows/ci.yml)
+
 Weekly study (ISO week 25, 2026) on the operational viability of time series foundation models. The question is
 when a zero-shot model beats a specialist refitted on each series, and how to route between the two in
 production. The original plan, in French, is [`plan_w25.md`](plan_w25.md). The decisions taken before writing
