@@ -8,7 +8,8 @@ production. The original plan, in French, is [`plan_w25.md`](plan_w25.md). The d
 code are in [`SPEC.md`](SPEC.md), and the deviations and corrections in
 [`IMPLEMENTATION_NOTES.md`](IMPLEMENTATION_NOTES.md).
 
-**Report (figures, step by step):** [`docs/`](docs/index.html), rendered with Quarto from [`report/`](report/).
+**Report (figures, step by step):** https://gwils28.github.io/W25_tsfm_viability/, rendered with Quarto from
+[`report/`](report/) into `docs/`.
 
 ## The answer in one sentence (block 2)
 
